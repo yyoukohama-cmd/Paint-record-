@@ -3044,6 +3044,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   openPi = bkOpen(openPi); openSummary = bkOpen(openSummary); openNotifs = bkOpen(openNotifs); openSync = bkOpen(openSync); openSettings = bkOpen(openSettings);
   var _cPi = closePi, _cSm = closeSummary, _cNc = closeNotifs, _cSy = closeSync, _cSe = closeSettings;
   function bkWrap(fn, isOpen) { return function () { var was = isOpen(); fn.apply(this, arguments); if (was && !bkPop && bkDepth > 0) { bkDepth--; if (bkTimer) clearTimeout(bkTimer); bkTimer = setTimeout(function () { bkTimer = null; try { history.back(); } catch (e) {} }, 0); } }; }
+  /* closing a panel steps history back; open the target only after that, or the back step returns to Home */
+  var _navTo = navTo; navTo = function (g) { if (bkTimer || bkPop) setTimeout(function () { _navTo(g); }, 250); else _navTo(g); };
   closePi = bkWrap(_cPi, function () { return !!piOv; }); closeSummary = bkWrap(_cSm, function () { return !!smOv; }); closeNotifs = bkWrap(_cNc, function () { return !!ncOv; }); closeSync = bkWrap(_cSy, function () { return !!syOv; }); closeSettings = bkWrap(_cSe, function () { return !!seOv; });
   window.addEventListener('popstate', function () {
     var sh = $('sheet');
