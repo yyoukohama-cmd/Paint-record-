@@ -3403,7 +3403,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v63';
+  var BUILD = 'aic-paint-v64';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
