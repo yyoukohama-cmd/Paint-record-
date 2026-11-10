@@ -939,7 +939,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var box = $('editor'), d = S.draft;
     if (!d) { box.innerHTML = '<div class="chead"><span class="ico" data-ic="layers"></span><div><h2>Paint systems</h2><p>' + (canPaint() ? 'Select a project to edit its paint systems and coats.' : 'Select a project to see its full paint data.') + '</p></div></div>'; hydrateIcons(box); return; }
     if ((!canPaint() && !S.apEd) || S.viewMode) { renderViewer(box, d); return; }
-    var h = '<div class="editor"><div class="eh"><h2>Paint systems · ' + esc(d.wo) + '</h2></div>';
+    var h = '<div class="editor"><div class="eh"><h2>Paint systems · ' + esc(d.wo) + '</h2></div><div class="f" style="margin:0 0 12px"><label for="e-wo">Project number (W.O)</label><input id="e-wo" type="text" value="' + esc(d.wo) + '" autocomplete="off"></div>';
     if (counts(d).assumed) h += '<p class="muted">Coats marked DFT ASSUMED use a placeholder thickness. Enter the real DFT and save to replace it.</p>';
     if (!d.systems.length) h += '<p class="muted">This project has no paint systems yet. Add one below.</p>';
     d.systems.forEach(function (s, i) {
@@ -963,7 +963,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     box.innerHTML = h + '</div>';
   }
   function collectDraft() {
-    var d = S.draft; if (!d) return;
+    var d = S.draft; if (!d) return; var wo0 = $('e-wo'); if (wo0 && wo0.value.trim()) d.wo = wo0.value.trim();
     d.systems.forEach(function (s, i) {
       var n = $('e-' + i + '-name'); if (n) s.name = n.value.trim();
       s.coats.forEach(function (c, j) {
@@ -986,9 +986,12 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (S.apEd) { var ar = repById(S.apEd); if (ar && S.draft) { collectDraft(); ar.pd.systems = clone(S.draft.systems); ar.ed = 1; S.apEd = null; S.viewMode = false; S.editId = null; S.draft = null; apDecide(ar, true); renderProjects(); renderEditor(); location.hash = 'home'; showTab('home'); return; } S.apEd = null; }
     var p = getP(S.editId); if (!p || !S.draft) return;
     collectDraft();
-    if (myNA()) { p.systems = clone(S.draft.systems); syOrigProj(); apSend('pd', { id: p._id, wo: p.wo, systems: clone(p.systems), isNew: !!p._new }); renderAll(); renderEditor(); return; }
-    p.systems = S.draft.systems; persistProjects();
-    renderAll(); renderEditor(); toast('Saved ' + p.wo + '. Download the updated file from Admin to share it with the team.');
+    var nwo = S.draft.wo || p.wo; if (lc(nwo) !== lc(p.wo) && S.projects.some(function (x) { return x !== p && lc(x.wo) === lc(nwo); })) { toast(nwo + ' is already another project. Choose a different number.'); return; }
+    var renamed = nwo !== p.wo ? p.wo : '';
+    if (myNA()) { p.systems = clone(S.draft.systems); p.wo = nwo; syOrigProj(); apSend('pd', { id: p._id, wo: nwo, was: renamed, systems: clone(p.systems), isNew: !!p._new }); renderAll(); renderEditor(); return; }
+    p.wo = nwo; p.systems = S.draft.systems; persistProjects();
+    if (renamed && S.shift) { S.shift.rows.forEach(function (x) { x.pid = (matchProject(x.wo) || {})._id || ''; fillRow(x); }); saveShift(); }
+    renderAll(); renderEditor(); toast(renamed ? 'Renamed ' + renamed + ' to ' + nwo + ' and saved.' : 'Saved ' + p.wo + '.');
   }
   function addProject() {
     var raw = $('newwo').value.trim();
@@ -1141,7 +1144,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       if (!conf.length) { toast('Confirm at least one step first.'); return; }
       var fin = function () {
         var tasks = conf.map(function (t) { var c = clone(t); delete c.cf; delete c._h; return c; });
-        S.ho = { id: 'h' + Date.now().toString(36), date: rv.ho.date, shift: rv.ho.shift, from: rv.ho.from || rv.by, to: rv.ho.to || '', tasks: tasks }; S.rvPush = true; saveHo();
+        S.ho = { id: 'h' + Date.now().toString(36), date: rv.ho.date, shift: rv.ho.shift, from: rv.by, to: rv.ho.to || '', tasks: tasks }; S.rvPush = true; saveHo();
         var r = repById(rv.rid); if (r) { var rj = rv.ho.tasks.filter(function (t) { return t.cf !== 'yes'; }); r.ned = rv.ho.tasks.filter(function (t) { return t.cf === 'yes' && t.ed; }).length; r.st = 'published'; r.dec = realName() || 'Supervisor'; r.nrej = rj.length; r.rej = rj.slice(0, 6).map(taskLabel); r.u = Date.now(); stMeta(); }
         S.rv = null; saveRv(); location.hash = 'handover'; showTab('handover'); renderHo(); renderReports(); syNow(true); toast('Final handover created and shared with the team.');
       };
@@ -3079,7 +3082,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   }
   function apSeen(r) { return !r.ap || r.ap === 'ok' || lc(r.by) === lc(realName()) || (r.ap === 'wait' && canApproveFor(r.by)); }
   function apLabel(r) {
-    if (r.kind === 'pd') return 'Paint data · ' + (r.pd.isNew ? 'new project ' : '') + r.pd.wo + ' · ' + (r.pd.systems || []).length + ' system' + ((r.pd.systems || []).length === 1 ? '' : 's');
+    if (r.kind === 'pd') return 'Paint data · ' + (r.pd.isNew ? 'new project ' : '') + (r.pd.was ? r.pd.was + ' renamed to ' : '') + r.pd.wo + ' · ' + (r.pd.systems || []).length + ' system' + ((r.pd.systems || []).length === 1 ? '' : 's');
     if (r.kind === 'rc') { var c = r.rc.rec; return 'Daily record · ' + c.wo + ' · ' + c.coat + ' · ' + nf(c.liters || 0) + ' L · ' + (c.bayName || ''); }
     if (r.kind === 'ls') return 'Log sheet · ' + r.ls.shift.date + ' · ' + r.ls.n + ' lines';
     if (r.kind === 'pi') return 'Paint issued · ' + r.pi.wo + ' · ' + r.pi.coat + ' · ' + nf(r.pi.l) + ' L';
@@ -3116,7 +3119,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (r.kind === 'ho' && r.ho) {
       var t = r.ho.tasks || [], g = {}, o = [];
       t.forEach(function (x) { var k = x.bay + ' · ' + x.wo; if (!g[k]) { g[k] = []; o.push(k); } g[k].push(String(x.step || '') + (x.status === 'yes' ? ' ✓' : x.status === 'no' ? ' ✗' : '') + (x.note ? ' (' + x.note + ')' : '') + ' · by ' + pn(x.mb || x.cb || r.by)); });
-      rows.push('<div class="fine">' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · from ' + pn(r.ho.from || r.by) + ' · received by ' + (r.ho.to || '—')) + (r.ho.to ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>');
+      rows.push('<div class="fine">' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · from ' + pn(r.by) + ' · received by ' + (r.ho.to || '—')) + (r.ho.to ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>');
       o.forEach(function (k) { rows.push('<div class="apd1"><b>' + esc(k) + '</b> <span>' + esc(g[k].join(', ')) + '</span></div>'); });
     } else if (r.kind === 'rc') { var c = r.rc.rec; rows.push('<div class="apd1">' + esc(c.date + ' · ' + (c.system || '') + ' · ' + nf(c.area || 0) + ' m² · loss ' + nf(c.lossPct || 0) + '% · DFT ' + nf(c.dft || 0) + ' µm' + (c.issued != null ? ' · issued ' + nf(c.issued) + ' L' : '')) + '</div>'); }
     else if (r.kind === 'pi') { var q = r.pi; rows.push('<div class="apd1">' + esc(q.date + ' · batches ' + (q.batches || []).join(', ') + ' · received by ' + (q.recv || '—') + (q.note ? ' · ' + q.note : '')) + (q.recv ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>'); }
@@ -3128,7 +3131,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var me = realName() || 'Admin', now = Date.now();
     if (r.kind === 'pi' || r.kind === 'pc') { r.ap = ok ? 'ok' : 'no'; r.dec = me; r.u = now; stMeta(); renderAp(); if (typeof piRender === 'function') try { piRender(true); } catch (e) {} fillHome(); toast(ok ? 'Approved.' : 'Rejected.'); return; }
     r.st = ok ? 'published' : 'dismissed'; r.dec = me; r.u = now;
-    if (ok && r.kind === 'pd') { var d = r.pd, p = getP(d.id); if (!p) { p = { _id: d.id, id: d.id, wo: d.wo, createdAt: now, systems: [] }; S.projects.push(p); } p.systems = clone(d.systems || []); delete p._new; S.mpPush = true; persistProjects(); if (S.shift) { S.shift.rows.forEach(function (x) { x.pid = (matchProject(x.wo) || {})._id || x.pid; fillRow(x); }); } }
+    if (ok && r.kind === 'pd') { var d = r.pd, p = getP(d.id); if (!p) { p = { _id: d.id, id: d.id, wo: d.wo, createdAt: now, systems: [] }; S.projects.push(p); } p.systems = clone(d.systems || []); if (d.wo) p.wo = d.wo; delete p._new; S.mpPush = true; persistProjects(); if (S.shift) { S.shift.rows.forEach(function (x) { x.pid = (matchProject(x.wo) || {})._id || x.pid; fillRow(x); }); } }
     if (ok && r.kind === 'rc') { var c = clone(r.rc.rec); delete c._h; if (!c.foreman) c.foreman = r.by; if (!S.records.some(function (x) { return x._id === c._id; })) { S.records.unshift(c); S.records.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); }); } S.rvPush = true; persistRecords(); }
     if (ok && r.kind === 'ls') { var sh = clone(r.ls.shift), keep = S.shift && S.shift.hoBays ? S.shift.hoBays : []; sh.hoBays = keep; delete sh.created; S.shift = sh; S.shift.rows.forEach(fillRow); S.rvPush = true; saveShift(); }
     stMeta(); syNow(true); renderAll(); toast(ok ? 'Approved and shared with the team.' : 'Rejected. ' + r.by + ' will be told.');
