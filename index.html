@@ -1531,6 +1531,26 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (a === 'cf-ok' && S.ho) { var k = b.getAttribute('data-id'); S.ho.cfl = (S.ho.cfl || []).filter(function (c) { return c.k !== k; }); saveHo(); if (S.canEdit && !myNA()) syNow(true); }
     var y = window.scrollY; renderHo(); window.scrollTo(0, y);
   });
+  /* the people the final handover is handed over to: picked from Users, each one is notified */
+  function hoToCands() {
+    var me = lc(realName()), out = [], seen = {}; function add(n) { n = String(n || '').trim(); var k = lc(n), r = roleOf(n); if (!n || seen[k] || k === me || !/^(owner|manager|supervisor|engineer|foreman)$/.test(r)) return; seen[k] = 1; out.push(n); }
+    add(OWNER_NAME); (ST.admins || []).forEach(add); Object.keys(ST.roles || {}).forEach(function (k) { add((ST.roles[k] || {}).n || k); });
+    var rk = function (n) { var r = roleOf(n); return r === 'foreman' ? 1 : 0; }; return out.sort(function (a, b) { return rk(a) - rk(b); });
+  }
+  function hoToList(ho) { if (ho.rcv && ho.rcv.length) return ho.rcv; return String(ho.to || '').split(/\s*,\s*/).filter(Boolean); }
+  function hoToHtml(ho) {
+    var L = hoToList(ho);
+    if (!hoShares()) return '<div class="small" style="padding:6px 2px">' + (L.length ? esc(L.map(pn).join(', ')) : '—') + '</div>';
+    var C = hoToCands(); L.forEach(function (n) { if (!C.some(function (c) { return lc(c) === lc(n); })) C.push(n); });
+    return '<div class="abch rcvch">' + (C.map(function (n) { var on = L.some(function (x) { return lc(x) === lc(n); }); return '<button type="button" class="abp" data-act="ho-to" data-n="' + esc(n) + '" aria-pressed="' + on + '">' + (on ? '✓ ' : '') + esc(pn(n)) + '</button>'; }).join('') || '<span class="fine">Add supervisors and foremen in Users first.</span>') + '</div><p class="fine" style="margin:6px 0 0">Each person you pick gets a notification with this handover.</p>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-act="ho-to"]') : null; if (!b || !S.ho || !hoShares()) return;
+    var n = b.getAttribute('data-n'), L = hoToList(S.ho).slice(), on = L.some(function (x) { return lc(x) === lc(n); });
+    L = on ? L.filter(function (x) { return lc(x) !== lc(n); }) : L.concat([n]); S.ho.rcv = L; S.ho.to = L.join(', '); saveHo();
+    var y = window.scrollY; renderHo(); window.scrollTo(0, y); if (SY.on) syNow(true);
+    if (!on) toast(pn(n) + ' is notified.');
+  });
   /* ---------- partial handovers: the final handover is built bay by bay from everyone's approved parts ---------- */
   function stTxt(t) { return t.status === 'yes' ? (t.kind === 'release' ? 'released' : 'done') : t.status === 'no' ? 'not done' : 'open'; }
   function sumWo(L) { return L.map(function (t) { return t.step + ' (' + stTxt(t) + ')'; }).sort().join(', '); }
@@ -1557,7 +1577,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var ids = {}; nh.tasks.forEach(function (t) { ids[t.id] = 1; });
     ho.tasks = sortTasks(keep.filter(function (t) { return !ids[t.id]; }).concat(nh.tasks));
     var fr = []; ho.tasks.forEach(function (t) { var s = t.src || old; if (s && fr.indexOf(s) < 0) fr.push(s); }); ho.from = fr.join(', ');
-    if (nh.to) { var tl = String(ho.to || '').split(/\s*,\s*/).filter(Boolean); String(nh.to).split(/\s*,\s*/).forEach(function (x) { if (x && tl.indexOf(x) < 0) tl.push(x); }); ho.to = tl.join(', '); }
+    if (nh.to) { var tl = hoToList(ho).slice(); String(nh.to).split(/\s*,\s*/).forEach(function (x) { if (x && tl.indexOf(x) < 0) tl.push(x); }); ho.to = tl.join(', '); ho.rcv = tl; }
     ho.cfl = (ho.cfl || []).filter(function (c) { return !cfl.some(function (x) { return x.k === c.k; }); }).concat(cfl);
     srcMap(ho); return cfl;
   }
@@ -1867,7 +1887,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var ho = S.ho, h = '<div class="card noprint"><div class="chead"><span class="ico" data-ic="arrow" data-sz="22"></span><div><h2>Shift handover</h2><p>' + (ho ? 'From the log sheet of ' + esc(ho.date) + '. Mark each step Done or Not done.' : 'Create it from the Log sheet tab, or import the handover file from the other supervisor.') + '</p></div></div>';
     if (ho) h += '<div class="fields"><div class="f"><label for="ho-shift">Shift</label><select id="ho-shift" data-hof="shift"><option' + (ho.shift === 'Day' ? ' selected' : '') + '>Day</option><option' + (ho.shift === 'Night' ? ' selected' : '') + '>Night</option></select></div>' +
       '<div class="f"><label for="ho-from"><span data-ic="user"></span>From</label><input id="ho-from" data-hof="from" type="text" value="' + esc(ho.from) + '" autocomplete="name" placeholder="Outgoing supervisor"></div>' +
-      '<div class="f wide"><label for="ho-to"><span data-ic="user"></span>To</label><input id="ho-to" data-hof="to" type="text" value="' + esc(ho.to) + '" autocomplete="off" placeholder="Incoming supervisor (optional)"></div></div>';
+      '<div class="f wide"><label><span data-ic="user"></span>Handed over to</label>' + hoToHtml(ho) + '</div></div>';
     h += '<div class="actions noprint"><button class="btn" data-act="pick-shift">' + ic('dl', 16) + 'Import handover (.xlsx)</button></div>';
     if (ho) h += '<label class="dn noprint" style="margin-top:2px"><input type="checkbox" class="ck" data-act="ho-items"' + (showItems() ? ' checked' : '') + '> Show Str / Batch in the sheet</label><label class="dn noprint" style="margin-top:2px"><input type="checkbox" class="ck" data-act="ho-paint"' + (showPaint() ? ' checked' : '') + '> Show paint required in the sheet</label>';
     h += '</div>';
@@ -2714,7 +2734,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     ho.tasks.forEach(function (t) { ids[t.id] = 1; var h = syHash(t); if (t._h !== h) { t._h = h; t.u = now; t.by = by; } delete ho.gone[t.id]; });
     (ho.ids || []).forEach(function (id) { if (!ids[id]) ho.gone[id] = now; });
     ho.ids = Object.keys(ids);
-    var hh = JSON.stringify([ho.shift, ho.from, ho.to, ho.date, ho.cfl || [], ho.src || {}]); if (ho._hh !== hh) { ho._hh = hh; ho.hu = now; ho.by = by; }
+    var hh = JSON.stringify([ho.shift, ho.from, ho.to, ho.date, ho.cfl || [], ho.src || {}, ho.rcv || []]); if (ho._hh !== hh) { ho._hh = hh; ho.hu = now; ho.by = by; }
   }
   function syStampShift() {
     var now = Date.now(), by = syName();
@@ -2801,6 +2821,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     Object.keys(up).forEach(function (n) { groupMsgs(out, n, 'recu', 'Record updated', up[n], function (r) { return 'updated a record: ' + recLabel(r); }, function (c, r) { return 'updated ' + c + ' records (latest: ' + recLabel(r) + ')'; }, 'log', function (r) { return r._id; }); });
     var gone = L.records.filter(function (r) { return M.tomb[r._id] && M.tomb[r._id] >= (r.u || r.ts || 0) && (push || !SY.tomb[r._id]); });
     gone.forEach(function (r) { var n = M.tby[r._id] || 'An admin'; if (n !== me) out.push({ k: 'recd', ti: 'Record removed', m: n + ' removed a record: ' + recLabel(r), g: { t: 'log', id: '' } }); });
+    if (M.ho) { var orc = {}; if (L.ho && L.ho.id === M.ho.id) hoToList(L.ho).forEach(function (n) { orc[lc(n)] = 1; }); var hb = []; M.ho.tasks.forEach(function (t) { if (hb.indexOf(t.bay) < 0) hb.push(t.bay); }); hb.sort(function (a, b) { return bayNo(a) - bayNo(b); });
+      hoToList(M.ho).forEach(function (n) { if (orc[lc(n)] || lc(n) === lc(M.ho.by || '')) return; if (push) out.push({ k: 'hoto', to: n, ti: 'Handover to you', m: pn(me) + ' handed over the ' + (M.ho.shift || '') + ' shift to you: ' + M.ho.tasks.length + ' tasks · ' + hb.join(', '), g: { t: 'handover', id: '' } }); else if (lc(n) === lc(me)) out.push({ k: 'hoto', ti: 'Handover to you', m: pn(M.ho.by || 'The supervisor') + ' handed over the ' + (M.ho.shift || '') + ' shift to you: ' + M.ho.tasks.length + ' tasks · ' + hb.join(', '), g: { t: 'handover', id: '' } }); }); }
     if (M.ho && (M.ho.cfl || []).length) { var oc = {}; if (L.ho && L.ho.id === M.ho.id) (L.ho.cfl || []).forEach(function (c) { oc[c.k + '|' + c.t] = 1; }); M.ho.cfl.forEach(function (c) { if (oc[c.k + '|' + c.t]) return; out.push({ k: 'hocf', ti: '\u26a0 Different reports', m: 'Watch out: different reports for ' + c.wo + ' in ' + c.bay + '. ' + pn(c.a.by) + ': ' + c.a.s + ' / ' + pn(c.b.by) + ': ' + c.b.s, g: { t: 'handover', id: '' } }); }); }
     if (M.ho && (!L.ho || L.ho.id !== M.ho.id)) { by = M.ho.by || ''; if (by && by !== me) out.push({ k: 'hon', ti: 'New handover', m: pn(by) + ' created the shift handover (' + M.ho.tasks.length + ' tasks)', g: { t: 'handover', id: '' } }); }
     else if (M.ho && L.ho) {
@@ -3452,7 +3474,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v65';
+  var BUILD = 'aic-paint-v66';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
