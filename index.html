@@ -397,7 +397,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
  body.print-ho .card{box-shadow:none;margin:0 0 4px;padding:6px 8px}
  body.print-ho #tab-handover{gap:4px}
 }
-.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}.apdet{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.04));font-size:.88rem}.apd1{padding:2px 0}.apd1 span{color:var(--muted)}</style>
+.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}.apdet{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.04));font-size:.88rem}.apd1{padding:2px 0}.apd1 span{color:var(--muted)}.qscr{position:fixed;right:14px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:19;display:flex;flex-direction:column;gap:8px}.qscr button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 6px 18px -6px rgba(20,30,50,.45);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.92}.qscr button[hidden]{display:none}@media print{.qscr{display:none}}</style>
 </head>
 <body>
 <header class="top">
@@ -936,7 +936,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function renderEditor() {
     var box = $('editor'), d = S.draft;
     if (!d) { box.innerHTML = '<div class="chead"><span class="ico" data-ic="layers"></span><div><h2>Paint systems</h2><p>' + (canPaint() ? 'Select a project to edit its paint systems and coats.' : 'Select a project to see its full paint data.') + '</p></div></div>'; hydrateIcons(box); return; }
-    if (!canPaint() || S.viewMode) { renderViewer(box, d); return; }
+    if ((!canPaint() && !S.apEd) || S.viewMode) { renderViewer(box, d); return; }
     var h = '<div class="editor"><div class="eh"><h2>Paint systems · ' + esc(d.wo) + '</h2></div>';
     if (counts(d).assumed) h += '<p class="muted">Coats marked DFT ASSUMED use a placeholder thickness. Enter the real DFT and save to replace it.</p>';
     if (!d.systems.length) h += '<p class="muted">This project has no paint systems yet. Add one below.</p>';
@@ -981,6 +981,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     try { if (window.innerWidth < 900) setTimeout(function () { var ed = $('editor'); if (ed && ed.scrollIntoView) ed.scrollIntoView({ block: 'start' }); }, 60); } catch (e) {}
   }
   function saveProject() {
+    if (S.apEd) { var ar = repById(S.apEd); if (ar && S.draft) { collectDraft(); ar.pd.systems = clone(S.draft.systems); ar.ed = 1; S.apEd = null; S.viewMode = false; S.editId = null; S.draft = null; apDecide(ar, true); renderProjects(); renderEditor(); location.hash = 'home'; showTab('home'); return; } S.apEd = null; }
     var p = getP(S.editId); if (!p || !S.draft) return;
     collectDraft();
     if (myNA()) { p.systems = clone(S.draft.systems); syOrigProj(); apSend('pd', { id: p._id, wo: p.wo, systems: clone(p.systems), isNew: !!p._new }); renderAll(); renderEditor(); return; }
@@ -1089,7 +1090,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var rpp = $('recpop'); if (rpp && !rpp.hidden && b.getAttribute('data-act') !== 'rec-menu') { rpp.hidden = true; markDock(); }
     var tab = b.getAttribute('data-tab'); if (tab) { var tf = b.getAttribute('data-f'); if (tf && $('logfilter')) $('logfilter').value = tf; goTab(tab); return; }
     var act = b.getAttribute('data-act'), id = b.getAttribute('data-id'), si = +b.getAttribute('data-si'), ci = +b.getAttribute('data-ci');
-    if (/^(save-project|add-coat|del-coat|add-system|del-system|del-project|del-yes|add-project)$/.test(act) && !canPaint()) return;
+    if (/^(save-project|add-coat|del-coat|add-system|del-system|del-project|del-yes|add-project)$/.test(act) && !canPaint() && !(S.apEd && /^(save-project|add-coat|del-coat|add-system|del-system)$/.test(act))) return;
     if (/^(set-step|set-plan|x-open|x-tog|x-add|del-x)$/.test(act) && !canMark()) return;
     if (/^(toggle-rel|add-pdata|reset-shift|clear-shift|pick-shift)$/.test(act) && !S.canEdit && !(act === 'pick-shift' && S.tab === 'handover')) return;
     if (act === 'rec-menu') { if (rpp) rpp.hidden = !rpp.hidden; markDock(); return; }
@@ -1128,7 +1129,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       }, 'Submit');
     }
     else if (act === 'ho-review') { var rr1 = repById(id); if (!rr1 || !rr1.ho || !rvItemOk(rr1)) return; if (!S.rv || S.rv.rid !== rr1.id) { S.rv = { rid: rr1.id, by: rr1.by, ho: clone(rr1.ho) }; S.rv.ho.tasks.forEach(function (t) { t.cf = ''; }); saveRv(); } renderHo(); try { window.scrollTo(0, 0); } catch (e) {} }
-    else if (act === 'rv-st' || act === 'rv-cf') { if (!rvOk()) return; var rt = null; S.rv.ho.tasks.forEach(function (t) { if (t.id === id) rt = t; }); if (rt) { if (act === 'rv-st') { var sv = b.getAttribute('data-st'); rt.status = rt.status === sv ? '' : sv; } else { var cv = b.getAttribute('data-v'); rt.cf = rt.cf === cv ? '' : cv; if (rt.cf === 'yes') rt.cfby = realName() || 'Supervisor'; else delete rt.cfby; } saveRv(); renderHo(); } }
+    else if (act === 'rv-st' || act === 'rv-cf') { if (!rvOk()) return; var rt = null; S.rv.ho.tasks.forEach(function (t) { if (t.id === id) rt = t; }); if (rt) { if (act === 'rv-st') { var sv = b.getAttribute('data-st'); rt.status = rt.status === sv ? '' : sv; } else { var cv = b.getAttribute('data-v'), was = rt.cf; rt.cf = rt.cf === cv ? '' : cv; if (rt.cf === 'yes') rt.cfby = realName() || 'Supervisor'; else delete rt.cfby; if (rt.cf === 'no' || was === 'no') stepRej(rt, rt.cf === 'no'); } saveRv(); renderHo(); } }
     else if (act === 'rv-all') { if (!rvOk()) return; S.rv.ho.tasks.forEach(function (t) { if (t.cf !== 'no') { if (t.cf !== 'yes') t.cfby = realName() || 'Supervisor'; t.cf = 'yes'; } }); saveRv(); renderHo(); }
     else if (act === 'rv-close') { S.rv = null; saveRv(); renderHo(); }
     else if (act === 'rv-rej') { if (!rvOk()) return; askYes('Reject this whole handover? The foreman will be told it was rejected.', function () { var r = repById(S.rv.rid); if (r) { r.st = 'dismissed'; r.dec = realName() || 'Supervisor'; r.u = Date.now(); stMeta(); } S.rv = null; saveRv(); renderHo(); renderReports(); toast('Handover rejected.'); }, 'Reject'); }
@@ -1138,7 +1139,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var fin = function () {
         var tasks = conf.map(function (t) { var c = clone(t); delete c.cf; delete c._h; return c; });
         S.ho = { id: 'h' + Date.now().toString(36), date: rv.ho.date, shift: rv.ho.shift, from: rv.ho.from || rv.by, to: rv.ho.to || '', tasks: tasks }; S.rvPush = true; saveHo();
-        var r = repById(rv.rid); if (r) { var rj = rv.ho.tasks.filter(function (t) { return t.cf !== 'yes'; }); r.st = 'published'; r.dec = realName() || 'Supervisor'; r.nrej = rj.length; r.rej = rj.slice(0, 6).map(taskLabel); r.u = Date.now(); stMeta(); }
+        var r = repById(rv.rid); if (r) { var rj = rv.ho.tasks.filter(function (t) { return t.cf !== 'yes'; }); r.ned = rv.ho.tasks.filter(function (t) { return t.cf === 'yes' && t.ed; }).length; r.st = 'published'; r.dec = realName() || 'Supervisor'; r.nrej = rj.length; r.rej = rj.slice(0, 6).map(taskLabel); r.u = Date.now(); stMeta(); }
         S.rv = null; saveRv(); location.hash = 'handover'; showTab('handover'); renderHo(); renderReports(); syNow(true); toast('Final handover created and shared with the team.');
       };
       if (S.ho && S.ho.tasks && S.ho.tasks.length) askYes('Replace the handover on this phone with the final one?', fin, 'Create final'); else fin();
@@ -1175,7 +1176,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'goto-projects') { location.hash = 'projects'; showTab('projects'); setTimeout(function () { var nw = $('newwo'); if (nw) { nw.scrollIntoView({ block: 'center' }); nw.focus(); } }, 120); }
     else if (act === 'edit-project') { S.viewMode = !canPaint(); selectEdit(id); }
     else if (act === 'view-project') { S.viewMode = true; selectEdit(id); }
-    else if (act === 'close-edit') { S.viewMode = false; S.editId = null; S.draft = null; renderProjects(); renderEditor(); }
+    else if (act === 'close-edit') { S.apEd = null; S.viewMode = false; S.editId = null; S.draft = null; renderProjects(); renderEditor(); }
     else if (act === 'save-project') saveProject();
     else if (act === 'add-system') { collectDraft(); S.draft.systems.push({ id: 's' + Date.now().toString(36), name: 'New paint system', coats: [{ label: 'Primer', paint: '', code: '', color: '', vs: '', dft: '', pack: '', thinner: '' }] }); renderEditor(); }
     else if (act === 'del-system') { collectDraft(); S.draft.systems.splice(si, 1); renderEditor(); }
@@ -1519,11 +1520,69 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         return '<div class="f" style="padding:10px 0;border-top:1px solid var(--line)"><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(r.text || '') + ' · ' + n + ' steps · ' + fmtT(r.ts) + '</span><div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
       }).join('') + '</div>';
     } else if (S.role && (!S.canEdit || myNA()) && lsGet('aic-sub')) {
-      var r0 = repById(lsGet('aic-sub')), msg = !r0 ? '' : r0.st === 'pending' ? 'Submitted. Waiting for a supervisor to review it.' : r0.st === 'published' && r0.sup ? 'Closed. ' + esc(r0.dec) + ' created the handover himself.' : r0.st === 'published' ? 'Confirmed by ' + esc(r0.dec) + '.' + (r0.nrej ? ' ' + r0.nrej + ' step' + (r0.nrej > 1 ? 's were' : ' was') + ' rejected: ' + esc((r0.rej || []).join('; ')) + '.' : '') : r0.st === 'dismissed' ? 'Rejected by ' + esc(r0.dec) + '. Fix it and submit again.' : '';
+      var r0 = repById(lsGet('aic-sub')), msg = !r0 ? '' : r0.st === 'pending' ? 'Submitted. Waiting for a supervisor to review it.' + ((r0.sr || []).length ? ' Rejected so far: ' + esc(r0.sr.map(function (x) { return x.l + (x.n ? ' (' + x.n + ')' : ''); }).join('; ')) + '.' : '') : r0.st === 'published' && r0.sup ? 'Closed. ' + esc(r0.dec) + ' created the handover himself.' : r0.st === 'published' ? 'Confirmed by ' + esc(r0.dec) + '.' + (r0.nrej ? ' ' + r0.nrej + ' step' + (r0.nrej > 1 ? 's were' : ' was') + ' rejected: ' + esc((r0.rej || []).join('; ')) + '.' : '') : r0.st === 'dismissed' ? 'Rejected by ' + esc(r0.dec) + '. Fix it and submit again.' : '';
       if (msg) h += '<div class="card noprint"><p style="margin:0"><b>Review status:</b> ' + msg + '</p></div>';
     }
     return h;
   }
+
+  /* a step rejected during review is told to the foreman at once, without waiting for the final handover */
+  function stepRej(t, on) {
+    var r = S.rv && repById(S.rv.rid); if (!r || r.st !== 'pending') return; var now = Date.now(), me = realName() || 'Supervisor';
+    r.sr = (r.sr || []).filter(function (x) { return x.id !== t.id; });
+    if (on) r.sr.push({ id: t.id, l: taskLabel(t) + (t.step && t.kind === 'coat' ? '' : ''), n: t.note || '', by: me, t: now });
+    r.u = now; stMeta(); if (on) toast('Step rejected. ' + (r.by || 'The foreman') + ' is notified.');
+  }
+
+  /* ---------- correct an item yourself and approve it, instead of rejecting and waiting ---------- */
+  function apForm(title, fields, onSave, saveLabel) {
+    var ov = document.createElement('div'); ov.setAttribute('role', 'dialog'); ov.style.cssText = 'position:fixed;inset:0;z-index:1150;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;padding:12px';
+    var h = '<div style="background:var(--surface,#fff);color:var(--ink,#111);border-radius:18px;max-width:460px;width:100%;max-height:88vh;overflow:auto;padding:18px"><h2 style="margin:0 0 4px;font-size:1.1rem">' + esc(title) + '</h2>';
+    fields.forEach(function (f, i) {
+      h += '<div class="f" style="margin-top:10px"><label for="apf' + i + '">' + esc(f.label) + '</label>' + (f.opts ? '<select id="apf' + i + '">' + f.opts.map(function (o) { return '<option' + (String(o) === String(f.v) ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>' : '<input id="apf' + i + '" type="' + (f.num ? 'number' : f.date ? 'date' : 'text') + '"' + (f.num ? ' step="any" inputmode="decimal"' : '') + ' value="' + esc(f.v == null ? '' : f.v) + '">') + '</div>';
+    });
+    h += '<p id="apferr" class="muted" style="color:var(--danger);min-height:1em;margin:8px 0 0"></p><div class="actions" style="margin-top:8px"><button class="btn primary" data-apf="ok">' + esc(saveLabel || 'Save and approve') + '</button><button class="btn" data-apf="no">Cancel</button></div></div>';
+    ov.innerHTML = h; document.body.appendChild(ov);
+    ov.addEventListener('click', function (e) {
+      var a = e.target.getAttribute && e.target.getAttribute('data-apf'); if (e.target === ov || a === 'no') { ov.parentNode.removeChild(ov); return; } if (a !== 'ok') return;
+      var vals = fields.map(function (f, i) { var v = $('apf' + i).value.trim(); return f.num ? (v === '' ? null : parseFloat(v)) : v; });
+      var err = onSave(vals); if (err) { $('apferr').textContent = err; return; } ov.parentNode.removeChild(ov);
+    });
+  }
+  function apEdit(r) {
+    if (r.kind === 'pi') {
+      var q = r.pi, coats = ['Primer', '2nd Coat', '3rd Coat', 'Top Coat', 'Touch-up']; if (coats.indexOf(q.coat) < 0) coats.unshift(q.coat);
+      apForm('Correct paint issued · ' + r.by, [{ label: 'Project (W.O)', v: q.wo }, { label: 'Coat', v: q.coat, opts: coats }, { label: 'Batches (comma separated)', v: (q.batches || []).join(', ') }, { label: 'Litres issued', v: q.l, num: true }, { label: 'Date', v: q.date, date: true }, { label: 'Received by', v: q.recv || '' }, { label: 'Note', v: q.note || '' }], function (v) {
+        if (!v[0]) return 'Enter the project.'; var bs = piSplit(v[2]); if (!bs.length) return 'Enter at least one batch.'; if (!(v[3] > 0)) return 'Enter the litres.';
+        q.wo = v[0]; q.coat = v[1]; q.batches = bs; q.l = Math.round(v[3] * 100) / 100; q.date = v[4] || q.date; q.recv = v[5]; q.note = v[6]; r.ed = 1; apDecide(r, true);
+      });
+    } else if (r.kind === 'rc') {
+      var c = r.rc.rec;
+      apForm('Correct daily record · ' + r.by, [{ label: 'Date', v: c.date, date: true }, { label: 'Bay', v: c.bayName, opts: S.bays.map(function (b) { return b.name; }) }, { label: 'Area m²', v: c.area, num: true }, { label: 'Loss %', v: c.lossPct, num: true }, { label: 'DFT µm', v: c.dft, num: true }, { label: 'Issued litres', v: c.issued, num: true }], function (v) {
+        if (!(v[2] > 0)) return 'Enter the area.'; if (!(v[4] > 0)) return 'Enter the DFT.';
+        var b = null; S.bays.forEach(function (x) { if (x.name === v[1]) b = x; });
+        c.date = v[0] || c.date; if (b) { c.bayId = b.id; c.bayName = b.name; } c.area = v[2]; c.lossPct = Math.max(0, v[3] || 0); c.dft = v[4]; c.issued = v[5] == null ? null : Math.round(v[5] * 100) / 100;
+        var L = c.vs > 0 ? c.area * c.dft / (c.vs * 10) * (1 + c.lossPct / 100) : c.liters; c.liters = Math.round(L * 100) / 100; c.wft = c.vs > 0 ? Math.round(c.dft * 1000 / c.vs) / 10 : c.wft; if (c.packSize) c.packs = Math.ceil(c.liters / c.packSize - 1e-9);
+        if (c.dftSpec) c.dftAdjusted = c.dft !== c.dftSpec; r.ed = 1; apDecide(r, true);
+      });
+    } else if (r.kind === 'pd') {
+      S.apEd = r.id; S.viewMode = false; S.editId = r.pd.id; S.draft = clone({ wo: r.pd.wo, createdAt: Date.now(), systems: r.pd.systems || [] });
+      location.hash = 'projects'; showTab('projects'); renderProjects(); renderEditor();
+      setTimeout(function () { var ed = $('editor'); if (ed) { var hd = ed.querySelector('.eh h2'); if (hd) hd.textContent = 'Correct ' + r.by + '’s paint data · ' + r.pd.wo; var sv = ed.querySelector('[data-act=save-project]'); if (sv) sv.textContent = 'Save and approve'; ed.scrollIntoView({ block: 'start' }); } }, 80);
+    }
+  }
+  function stepEdit(id) {
+    if (!rvOk()) return; var t = null; S.rv.ho.tasks.forEach(function (x) { if (x.id === id) t = x; }); if (!t) return;
+    var opts = ['Apply Primer', 'Apply 2nd Coat', 'Apply 3rd Coat', 'Apply Top Coat', 'To be released', 'Bundle for dispatch', 'Touch-up', 'Masking', 'Stenciling', 'Hold']; if (opts.indexOf(t.step) < 0) opts.unshift(t.step);
+    apForm('Correct step · ' + t.bay + ' · ' + t.wo, [{ label: 'Step', v: t.step, opts: opts }, { label: 'Or type another step', v: '' }, { label: 'Status', v: t.status === 'yes' ? 'Done' : t.status === 'no' ? 'Not done' : 'Not marked', opts: ['Not marked', 'Done', 'Not done'] }, { label: 'Note', v: t.note || '' }], function (v) {
+      var st = v[1] || v[0], me = realName() || 'Supervisor';
+      if (st !== t.step) { if (!t.was) t.was = t.step; t.step = st; var m = /^Apply (.+)$/.exec(st); if (m) { t.kind = 'coat'; t.stage = m[1]; } else if (st === 'To be released') t.kind = 'release'; else if (st === 'Bundle for dispatch') t.kind = 'bundle'; else t.kind = 'extra'; }
+      t.status = v[2] === 'Done' ? 'yes' : v[2] === 'Not done' ? 'no' : ''; t.note = v[3]; t.ed = me; t.cf = 'yes'; t.cfby = me;
+      var r = repById(S.rv.rid); if (r) { r.sr = (r.sr || []).filter(function (x) { return x.id !== t.id; }); }
+      saveRv(); renderHo(); toast('Step corrected and confirmed.');
+    }, 'Save and confirm');
+  }
+  document.addEventListener('click', function (e) { var el = e.target.closest ? e.target.closest('[data-ed=step]') : null; if (el) stepEdit(el.getAttribute('data-id')); });
   function rvHtml() {
     var rv = S.rv, ho = rv.ho, bays = {}, order = [];
     ho.tasks.forEach(function (t) { if (!bays[t.bay]) { bays[t.bay] = []; order.push(t.bay); } bays[t.bay].push(t); });
@@ -1533,7 +1592,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         var id = esc(t.id), cls = t.cf === 'yes' ? ' dn' : t.cf === 'no' ? ' no' : '';
         return '<div class="hline' + cls + '"><div class="hm"><div class="hl-top"><b>' + esc(t.wo) + '</b> <span class="tag">' + esc(String(t.step || '').toUpperCase()) + '</span></div><input class="hnote" data-rvnote="' + id + '" type="text" value="' + esc(t.note || '') + '" placeholder="Note" aria-label="Note"></div>' +
           '<div class="hctl"><div class="seg" role="group" aria-label="Status"><button type="button" class="rel" data-act="rv-st" data-id="' + id + '" data-st="yes" aria-pressed="' + (t.status === 'yes') + '">Done</button><button type="button" class="no" data-act="rv-st" data-id="' + id + '" data-st="no" aria-pressed="' + (t.status === 'no') + '">Not done</button></div>' +
-          '<div class="seg" role="group" aria-label="Review"><button type="button" class="rel" data-act="rv-cf" data-id="' + id + '" data-v="yes" aria-pressed="' + (t.cf === 'yes') + '">Confirm</button><button type="button" class="no" data-act="rv-cf" data-id="' + id + '" data-v="no" aria-pressed="' + (t.cf === 'no') + '">Reject</button></div></div></div>';
+          '<div class="seg" role="group" aria-label="Review"><button type="button" class="rel" data-act="rv-cf" data-id="' + id + '" data-v="yes" aria-pressed="' + (t.cf === 'yes') + '">Confirm</button><button type="button" data-ed="step" data-id="' + id + '">Edit</button><button type="button" class="no" data-act="rv-cf" data-id="' + id + '" data-v="no" aria-pressed="' + (t.cf === 'no') + '">Reject</button></div></div>' + (t.ed ? '<div class="small"><b>Edited by ' + esc(t.ed) + '</b>' + (t.was ? ' · was: ' + esc(t.was) : '') + '</div>' : '') + '</div>';
       }).join('') + '</div></div>';
     });
     var cn = ho.tasks.filter(function (t) { return t.cf === 'yes'; }).length;
@@ -2550,9 +2609,10 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         else if (r.st === 'published' && r.notify && r.by !== me && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
         return;
       }
+      if (r.kind === 'ho' && (r.sr || []).length) { var osr = {}; (o.sr || []).forEach(function (x) { osr[x.id] = 1; }); (r.sr || []).forEach(function (x) { if (!osr[x.id] && x.by !== me && (push || r.by === me)) out.push({ k: 'hosr', to: r.by, ti: 'Step rejected', m: x.by + ' rejected a step of your handover: ' + x.l + (x.n ? ' (' + x.n + ')' : ''), g: { t: 'handover', id: '' } }); }); }
       if (r.st === o.st || r.st === 'removed') return;
       if (r.st === 'published' && r.notify && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
-      else if ((r.by === me || push) && r.dec && r.dec !== me) out.push({ k: 'repr', to: r.by, ti: 'Your report', m: r.kind === 'ho' ? 'Your handover was ' + (r.st === 'published' ? (r.sup ? 'closed because ' + r.dec + ' created the handover himself' : r.nrej ? 'issued as the final handover by ' + r.dec + ', but ' + r.nrej + ' step' + (r.nrej > 1 ? 's were' : ' was') + ' rejected: ' + (r.rej || []).slice(0, 3).join('; ') : 'confirmed and issued as the final handover by ' + r.dec) : 'rejected by ' + r.dec) : 'Your report was ' + (r.st === 'deleted' ? 'accepted and the record was removed' : r.st === 'dismissed' ? 'reviewed and closed' : 'published to the team') + ' by ' + r.dec, g: { t: r.kind === 'ho' ? 'handover' : 'reports', id: r.kind === 'ho' ? '' : r.id } });
+      else if ((r.by === me || push) && r.dec && r.dec !== me) out.push({ k: 'repr', to: r.by, ti: 'Your report', m: r.kind === 'ho' ? 'Your handover was ' + (r.st === 'published' ? (r.sup ? 'closed because ' + r.dec + ' created the handover himself' : r.nrej ? 'issued as the final handover by ' + r.dec + ', but ' + r.nrej + ' step' + (r.nrej > 1 ? 's were' : ' was') + ' rejected: ' + (r.rej || []).slice(0, 3).join('; ') : 'confirmed and issued as the final handover by ' + r.dec + (r.ned ? ' (' + r.ned + ' step' + (r.ned > 1 ? 's' : '') + ' corrected)' : '')) : 'rejected by ' + r.dec) : 'Your report was ' + (r.st === 'deleted' ? 'accepted and the record was removed' : r.st === 'dismissed' ? 'reviewed and closed' : 'published to the team') + ' by ' + r.dec, g: { t: r.kind === 'ho' ? 'handover' : 'reports', id: r.kind === 'ho' ? '' : r.id } });
     });
     return out;
   }
@@ -2958,10 +3018,10 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     L.sort(function (a, b) { return b.ts - a.ts; });
     if (L.length) h += '<div class="card apc"><div class="aph"><h2>Waiting for your approval</h2><span class="apn">' + L.length + '</span></div>' + L.map(function (r) {
       return '<div class="apr"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px">' +
-        (r.kind === 'ho' ? '<button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '" data-goho="1">Review</button>' : (r.kind === 'pd' ? '<button class="btn sm" data-ap="see" data-id="' + esc(r.id) + '">See changes</button>' : '') + '<button class="btn sm primary" data-ap="ok" data-id="' + esc(r.id) + '">Approve</button><button class="btn sm danger" data-ap="no" data-id="' + esc(r.id) + '">Reject</button>') + '</div></div>';
+        (r.kind === 'ho' ? '<button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '" data-goho="1">Review</button>' : (r.kind === 'pd' ? '<button class="btn sm" data-ap="see" data-id="' + esc(r.id) + '">See changes</button>' : '') + (/^(pd|rc|pi)$/.test(r.kind) ? '<button class="btn sm" data-ap="edit" data-id="' + esc(r.id) + '">Edit</button>' : '') + '<button class="btn sm primary" data-ap="ok" data-id="' + esc(r.id) + '">Approve</button><button class="btn sm danger" data-ap="no" data-id="' + esc(r.id) + '">Reject</button>') + '</div></div>';
     }).join('') + '</div>';
     if (M.length) h += '<div class="card apc"><div class="aph"><h2>Your requests</h2></div>' + M.map(function (r) {
-      var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap, s = a === 'pending' || a === 'wait' ? '<span class="chip">Waiting for approval</span>' : a === 'published' || a === 'ok' ? '<span class="chip ok">Approved by ' + esc(r.dec || '') + '</span>' : '<span class="chip">Rejected by ' + esc(r.dec || '') + '</span>';
+      var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap, s = a === 'pending' || a === 'wait' ? '<span class="chip">Waiting for approval</span>' : a === 'published' || a === 'ok' ? '<span class="chip ok">' + (r.ed ? 'Corrected and approved by ' : 'Approved by ') + esc(r.dec || '') + '</span>' : '<span class="chip">Rejected by ' + esc(r.dec || '') + '</span>';
       return '<div class="apr"><span class="fine">' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span> ' + s + '</div>';
     }).join('') + '<p class="fine" style="margin:6px 0 0">Approved by: ' + esc(apWho(realName())) + '</p></div>';
     box.innerHTML = h; box.hidden = !h;
@@ -2999,7 +3059,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     }
     if (a === oa || !r.dec || r.dec === me) return;
     var yes = a === 'published' || a === 'ok', no = a === 'dismissed' || a === 'no'; if (!yes && !no) return;
-    if (push || r.by === me) out.push({ k: 'apd', to: r.by, ti: yes ? 'Approved' : 'Rejected', m: 'Your ' + lab + ' was ' + (yes ? 'approved' : 'rejected') + ' by ' + r.dec, g: { t: 'home', id: '' } });
+    if (push || r.by === me) out.push({ k: 'apd', to: r.by, ti: yes ? (r.ed ? 'Approved with changes' : 'Approved') : 'Rejected', m: 'Your ' + lab + ' was ' + (yes ? (r.ed ? 'corrected and approved' : 'approved') : 'rejected') + ' by ' + r.dec, g: { t: 'home', id: '' } });
   }
   function abBox(n) {
     if (!naOf(n)) return '';
@@ -3020,6 +3080,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (el.getAttribute('data-goho')) { setTimeout(function () { location.hash = 'handover'; showTab('handover'); }, 30); return; }
     var r = repById(el.getAttribute('data-id')), a = el.getAttribute('data-ap'); if (!r || !canApproveFor(r.by)) return;
     if (a === 'see') { apSee(r); return; }
+    if (a === 'edit') { apEdit(r); return; }
     askYes((a === 'ok' ? 'Approve' : 'Reject') + ' this?\n' + r.by + ' · ' + apLabel(r), function () { apDecide(r, a === 'ok'); }, a === 'ok' ? 'Approve' : 'Reject');
   });
 
@@ -3095,7 +3156,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v58';
+  var BUILD = 'aic-paint-v59';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
@@ -3117,6 +3178,19 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   setTimeout(updCheck, 4000); setInterval(updCheck, 300000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) updCheck(); });
 
+
+  /* quick jump to the top or the bottom of long pages */
+  (function () {
+    var w = document.createElement('div'); w.className = 'qscr noprint';
+    w.innerHTML = '<button type="button" data-q="up" aria-label="Go to top" hidden>↑</button><button type="button" data-q="down" aria-label="Go to bottom" hidden>↓</button>';
+    document.body.appendChild(w);
+    var up = w.firstChild, dn = w.lastChild, tk = 0;
+    function upd() { tk = 0; var y = window.scrollY || 0, H = document.documentElement.scrollHeight, v = window.innerHeight, long = H > v * 1.6; up.hidden = !long || y < 300; dn.hidden = !long || y > H - v - 300; }
+    function sch() { if (!tk) tk = requestAnimationFrame(upd); }
+    window.addEventListener('scroll', sch, { passive: true }); window.addEventListener('resize', sch); setInterval(upd, 1200);
+    w.addEventListener('click', function (e) { var q = e.target.getAttribute && e.target.getAttribute('data-q'); if (q === 'up') window.scrollTo({ top: 0, behavior: 'smooth' }); else if (q === 'down') window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); });
+    upd();
+  })();
   /* ---------- boot ---------- */
   applyTheme();
   setTimeout(admRestore, 0);
