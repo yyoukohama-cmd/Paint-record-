@@ -397,7 +397,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
  body.print-ho .card{box-shadow:none;margin:0 0 4px;padding:6px 8px}
  body.print-ho #tab-handover{gap:4px}
 }
-</style>
+.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}</style>
 </head>
 <body>
 <header class="top">
@@ -805,7 +805,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var rec = { _id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: Date.now(), date: S.date, bayId: bay.id, bayName: bay.name, wo: p.wo, system: s ? s.name : '', coat: c.label || '', paint: c.paint || '', code: c.code || '', color: ci ? ci.label : '',
                 area: area, lossPct: loss, dft: num(c.dft), dftSpec: E.spec, dftAdjusted: !!(E.adjusted && E.spec), vs: num(c.vs), wft: Math.round(wftOf(c) * 10) / 10, dftTotal: (function () { var k = cumDft(s, +$('coat').value || 0, num(c.dft)); return k.total; })(),
                 issued: $('issued').value.trim() === '' ? null : Math.round(num($('issued').value) * 100) / 100, liters: Math.round(r.liters * 100) / 100, packs: r.packs, packSize: r.pack, foreman: $('foreman').value.trim() };
-    S.records.unshift(rec); persistRecords();
+    S.records.unshift(rec); persistRecords(); if (myNA()) apSend('rc', { rec: clone(rec) }, true);
     lsSet('aic-project', p._id); lsSet('aic-foreman', rec.foreman);
     $('area').value = ''; $('issued').value = ''; S.dftEdited = false; autofillDft(true); renderBays(); renderResult(); renderLog(); renderStatus();
     toast('Saved: ' + fmt(rec.liters, 1) + ' L of ' + (c.label || 'paint') + ' for ' + p.wo + ' · ' + bay.name);
@@ -982,7 +982,9 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   }
   function saveProject() {
     var p = getP(S.editId); if (!p || !S.draft) return;
-    collectDraft(); p.systems = S.draft.systems; persistProjects();
+    collectDraft();
+    if (myNA()) { p.systems = clone(S.draft.systems); syOrigProj(); apSend('pd', { id: p._id, wo: p.wo, systems: clone(p.systems), isNew: !!p._new }); renderAll(); renderEditor(); return; }
+    p.systems = S.draft.systems; persistProjects();
     renderAll(); renderEditor(); toast('Saved ' + p.wo + '. Download the updated file from Admin to share it with the team.');
   }
   function addProject() {
@@ -990,10 +992,11 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (!raw) { toast('Enter a project number first.'); return; }
     var id = raw.replace(/[^A-Za-z0-9_.~:@+-]+/g, '-').slice(0, 120);
     if (S.projects.some(function (p) { return p._id.toLowerCase() === id.toLowerCase(); })) { toast(raw + ' is already in the list.'); return; }
-    S.projects.push({ _id: id, id: id, wo: raw, createdAt: Date.now(), systems: [] }); persistProjects();
+    if (myNA()) { S.projects.push({ _id: id, id: id, wo: raw, createdAt: Date.now(), systems: [], _new: true }); syOrigProj(); } else { S.projects.push({ _id: id, id: id, wo: raw, createdAt: Date.now(), systems: [] }); persistProjects(); }
     $('newwo').value = ''; renderAll(); selectEdit(id); toast('Project ' + raw + ' added. Add its paint system.');
   }
   function deleteProject(id) {
+    if (myNA()) { toast('Deleting a project needs approval. Ask ' + apWho(realName()) + ' to delete it.'); S.confirm = null; renderProjects(); return; }
     S.projects = S.projects.filter(function (p) { return p._id !== id; });
     if (S.editId === id) { S.editId = null; S.draft = null; }
     persistProjects(); renderAll(); renderEditor(); toast('Project deleted. Its saved records stay in the log.');
@@ -1070,7 +1073,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       } catch (e) {}
       try { var pl = piList(), pt = 0, td = todayStr(); pl.forEach(function (r) { if (r.pi.date === td) pt += r.pi.l; }); if ($('hm-pi')) $('hm-pi').textContent = pl.length ? piL(pt) + ' L issued today \u00b7 ' + pl.length + ' recorded' : 'Record what the store issued'; } catch (e) {}
       try { var sd = sumData(); if ($('hm-sum')) $('hm-sum').textContent = sd ? f1(sd.tot.all) + ' t in bays \u00b7 ' + f1(sd.rel) + ' t released' : 'Import the log sheet to see it'; } catch (e) {}
-      var pend = 0; try { if (myAdmin()) pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'pi' && r.kind !== 'pc'; }).length; } catch (e) {}
+      var pend = 0; try { if (myAdmin()) pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'pi' && r.kind !== 'pc' && !AP_K.test(r.kind); }).length; } catch (e) {} try { renderAp(); } catch (e) {}
       ['hm-bd', 'nd-bd'].forEach(function (id) { var el = $(id); if (el) { el.hidden = !pend; el.textContent = pend || ''; } });
       
     } catch (e) {}
@@ -1116,7 +1119,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'toggle-bat') { lsSet('aic-lsbatch', showBat() ? '0' : '1'); renderShift(); }
     else if (act === 'pick-hobay') { if (S.shift) { var all = groupBays(S.shift.rows).map(function (g) { return g.bay; }), sl = (S.shift.hoBays || []).slice(), k = sl.indexOf(id); if (k > -1) sl.splice(k, 1); else sl.push(id); S.shift.hoBays = sl; saveShift(); var bpk = document.querySelector('#shiftout .baypick'), psl = bpk ? bpk.scrollLeft : 0, py = window.scrollY; renderShift(); var bpk2 = document.querySelector('#shiftout .baypick'); if (bpk2) bpk2.scrollLeft = psl; window.scrollTo(0, py); } }
     else if (act === 'ho-submit') {
-      if (!S.role || S.canEdit) return; if (!S.ho || !S.ho.tasks.length) { toast('Create a handover first.'); return; }
+      if (!S.role || (S.canEdit && !myNA())) return; if (!S.ho || !S.ho.tasks.length) { toast('Create a handover first.'); return; }
       askYes('Send this handover to a supervisor for review?', function () {
         var now = Date.now(), me = realName(); ST.reports.forEach(function (r) { if (r.kind === 'ho' && r.st === 'pending' && lc(r.by) === lc(me)) { r.st = 'removed'; r.u = now; } });
         var c = clone(S.ho); delete c.sub; delete c.gone; delete c.ids; c.tasks.forEach(function (t) { delete t._h; });
@@ -1124,13 +1127,13 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         S.ho.sub = id; lsSet('aic-sub', id); saveHo(); stMeta(); renderHo(); toast(SY.on ? 'Submitted. A supervisor will review it.' : 'Saved. Connect Sync so it reaches the supervisor.');
       }, 'Submit');
     }
-    else if (act === 'ho-review') { if (!canReview()) return; var rr1 = repById(id); if (!rr1 || !rr1.ho) return; if (!S.rv || S.rv.rid !== rr1.id) { S.rv = { rid: rr1.id, by: rr1.by, ho: clone(rr1.ho) }; S.rv.ho.tasks.forEach(function (t) { t.cf = ''; }); saveRv(); } renderHo(); try { window.scrollTo(0, 0); } catch (e) {} }
-    else if (act === 'rv-st' || act === 'rv-cf') { if (!canReview() || !S.rv) return; var rt = null; S.rv.ho.tasks.forEach(function (t) { if (t.id === id) rt = t; }); if (rt) { if (act === 'rv-st') { var sv = b.getAttribute('data-st'); rt.status = rt.status === sv ? '' : sv; } else { var cv = b.getAttribute('data-v'); rt.cf = rt.cf === cv ? '' : cv; if (rt.cf === 'yes') rt.cfby = realName() || 'Supervisor'; else delete rt.cfby; } saveRv(); renderHo(); } }
-    else if (act === 'rv-all') { if (!canReview() || !S.rv) return; S.rv.ho.tasks.forEach(function (t) { if (t.cf !== 'no') { if (t.cf !== 'yes') t.cfby = realName() || 'Supervisor'; t.cf = 'yes'; } }); saveRv(); renderHo(); }
+    else if (act === 'ho-review') { var rr1 = repById(id); if (!rr1 || !rr1.ho || !rvItemOk(rr1)) return; if (!S.rv || S.rv.rid !== rr1.id) { S.rv = { rid: rr1.id, by: rr1.by, ho: clone(rr1.ho) }; S.rv.ho.tasks.forEach(function (t) { t.cf = ''; }); saveRv(); } renderHo(); try { window.scrollTo(0, 0); } catch (e) {} }
+    else if (act === 'rv-st' || act === 'rv-cf') { if (!rvOk()) return; var rt = null; S.rv.ho.tasks.forEach(function (t) { if (t.id === id) rt = t; }); if (rt) { if (act === 'rv-st') { var sv = b.getAttribute('data-st'); rt.status = rt.status === sv ? '' : sv; } else { var cv = b.getAttribute('data-v'); rt.cf = rt.cf === cv ? '' : cv; if (rt.cf === 'yes') rt.cfby = realName() || 'Supervisor'; else delete rt.cfby; } saveRv(); renderHo(); } }
+    else if (act === 'rv-all') { if (!rvOk()) return; S.rv.ho.tasks.forEach(function (t) { if (t.cf !== 'no') { if (t.cf !== 'yes') t.cfby = realName() || 'Supervisor'; t.cf = 'yes'; } }); saveRv(); renderHo(); }
     else if (act === 'rv-close') { S.rv = null; saveRv(); renderHo(); }
-    else if (act === 'rv-rej') { if (!canReview() || !S.rv) return; askYes('Reject this whole handover? The foreman will be told it was rejected.', function () { var r = repById(S.rv.rid); if (r) { r.st = 'dismissed'; r.dec = realName() || 'Supervisor'; r.u = Date.now(); stMeta(); } S.rv = null; saveRv(); renderHo(); renderReports(); toast('Handover rejected.'); }, 'Reject'); }
+    else if (act === 'rv-rej') { if (!rvOk()) return; askYes('Reject this whole handover? The foreman will be told it was rejected.', function () { var r = repById(S.rv.rid); if (r) { r.st = 'dismissed'; r.dec = realName() || 'Supervisor'; r.u = Date.now(); stMeta(); } S.rv = null; saveRv(); renderHo(); renderReports(); toast('Handover rejected.'); }, 'Reject'); }
     else if (act === 'rv-final') {
-      if (!canReview() || !S.rv) return; var rv = S.rv, conf = rv.ho.tasks.filter(function (t) { return t.cf === 'yes'; });
+      if (!rvOk()) return; var rv = S.rv, conf = rv.ho.tasks.filter(function (t) { return t.cf === 'yes'; });
       if (!conf.length) { toast('Confirm at least one step first.'); return; }
       var fin = function () {
         var tasks = conf.map(function (t) { var c = clone(t); delete c.cf; delete c._h; return c; });
@@ -1151,7 +1154,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'ho-paint') { lsSet('aic-hopaint', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'ho-items') { lsSet('aic-hoitems', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'del-x') { var rx = findRow(id); if (rx) { rx.extras.splice(+b.getAttribute('data-xi'), 1); saveShift(); renderShift(); } }
-    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = S.canEdit ? hoPend().filter(function (r) { return lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); if (pend0.length) { var nw0 = Date.now(); pend0.forEach(function (r) { r.st = 'published'; r.dec = realName(); r.sup = 1; r.nrej = 0; r.u = nw0; }); stMeta(); } if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast('Handover created' + (cr ? ' (' + cr + ' carried over)' : '') + '.'); if (!S.canEdit && S.role && S.ho && S.ho.tasks.length) setTimeout(function () { var sb = document.querySelector('[data-act=ho-submit]'); if (sb) sb.click(); }, 400); }; if (S.canEdit) askYes('Create the handover and share it with the team?' + (pend0.length ? ' ' + pend0.length + ' handover' + (pend0.length > 1 ? 's' : '') + ' waiting for review (' + pend0.map(function (r) { return r.by; }).join(', ') + ') will be closed.' : ''), doMake, 'Create handover'); else doMake(); }
+    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = S.canEdit && !myNA() ? hoPend().filter(function (r) { return lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); if (pend0.length) { var nw0 = Date.now(); pend0.forEach(function (r) { r.st = 'published'; r.dec = realName(); r.sup = 1; r.nrej = 0; r.u = nw0; }); stMeta(); } if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast('Handover created' + (cr ? ' (' + cr + ' carried over)' : '') + '.'); if ((!S.canEdit || myNA()) && S.role && S.ho && S.ho.tasks.length) setTimeout(function () { var sb = document.querySelector('[data-act=ho-submit]'); if (sb) sb.click(); }, 400); }; if (S.canEdit) askYes('Create the handover and share it with the team?' + (pend0.length ? ' ' + pend0.length + ' handover' + (pend0.length > 1 ? 's' : '') + ' waiting for review (' + pend0.map(function (r) { return r.by; }).join(', ') + ') will be closed.' : ''), doMake, 'Create handover'); else doMake(); }
     else if (act === 'print-ho') printHo();
     else if (act === 'share-ho') shareHo();
     else if (act === 'clear-shift') { askYes('Clear the imported log sheet and all its statuses?', function () { S.shift = null; saveShift(); renderShift(); }, 'Clear log sheet'); }
@@ -1347,7 +1350,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var prevB = S.shift ? S.shift.hoBays : null;
       S.shift = { date: date, file: file.name, loss: loss, ho: false, hoBays: prevB || [], rows: buildRows(items), dayRel: parseDayRel(sheets), sheetTotal: parseSheetTotal(sheets) };
       S.shift.rows.forEach(function (r) { if (old[r.id]) { r.status = old[r.id].status; r.done = old[r.id].done || 0; r.plan = old[r.id].plan || 1; r.extras = old[r.id].extras || []; } fillRow(r); });
-      saveShift(); renderShift(); toast('Log sheet read: ' + S.shift.rows.length + ' lines from ' + items.length + ' items.'); setTimeout(function () { notifyNoData(S.shift.rows); }, 1800);
+      saveShift(); if (myNA()) { var ls0 = clone(S.shift); delete ls0.hoBays; ls0.rows.forEach(function (r) { delete r._h; delete r.u; delete r.by; }); apSend('ls', { shift: ls0, n: ls0.rows.length }, true); } renderShift(); toast('Log sheet read: ' + S.shift.rows.length + ' lines from ' + items.length + ' items.'); setTimeout(function () { notifyNoData(S.shift.rows); }, 1800);
     };
     rd.readAsArrayBuffer(file);
   }
@@ -1505,15 +1508,17 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (!hoTask(n.id)) S.ho.tasks.push(n); sortTasks(S.ho.tasks); saveHo();
   }
   function hoPend() { return ST.reports.filter(function (r) { return r.kind === 'ho' && r.st === 'pending'; }); }
+  function rvItemOk(r) { return !!(r && S.role && lc(r.by) !== lc(realName()) && (naOf(r.by) ? canApproveFor(r.by) : canReview())); }
+  function rvOk() { return !!(S.rv && rvItemOk(repById(S.rv.rid) || { by: S.rv.by })); }
   function hoTopHtml() {
     var h = '';
-    if (canReview()) {
-      var L = hoPend();
+    var L = S.role ? hoPend().filter(rvItemOk) : [];
+    if (L.length) {
       if (L.length) h += '<div class="card noprint"><div class="chead"><div><h2>Waiting for your review (' + L.length + ')</h2><p>Handovers submitted by foremen. Check them, confirm the steps, then create the final handover.</p></div></div>' + L.map(function (r) {
         var n = r.ho && r.ho.tasks ? r.ho.tasks.length : 0;
         return '<div class="f" style="padding:10px 0;border-top:1px solid var(--line)"><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(r.text || '') + ' · ' + n + ' steps · ' + fmtT(r.ts) + '</span><div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
       }).join('') + '</div>';
-    } else if (S.role && !S.canEdit && lsGet('aic-sub')) {
+    } else if (S.role && (!S.canEdit || myNA()) && lsGet('aic-sub')) {
       var r0 = repById(lsGet('aic-sub')), msg = !r0 ? '' : r0.st === 'pending' ? 'Submitted. Waiting for a supervisor to review it.' : r0.st === 'published' && r0.sup ? 'Closed. ' + esc(r0.dec) + ' created the handover himself.' : r0.st === 'published' ? 'Confirmed by ' + esc(r0.dec) + '.' + (r0.nrej ? ' ' + r0.nrej + ' step' + (r0.nrej > 1 ? 's were' : ' was') + ' rejected: ' + esc((r0.rej || []).join('; ')) + '.' : '') : r0.st === 'dismissed' ? 'Rejected by ' + esc(r0.dec) + '. Fix it and submit again.' : '';
       if (msg) h += '<div class="card noprint"><p style="margin:0"><b>Review status:</b> ' + msg + '</p></div>';
     }
@@ -1536,7 +1541,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   }
   function renderHo() {
     var box = $('tab-handover'); if (!box) return;
-    if (S.rv && canReview()) { box.innerHTML = rvHtml(); return; }
+    if (rvOk()) { box.innerHTML = rvHtml(); return; }
     renderHo0(); var top = hoTopHtml(); if (top) box.insertAdjacentHTML('afterbegin', top);
   }
   function renderHo0() {
@@ -1574,7 +1579,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       }).join('') + '</div></div>';
     });
     h += '<div class="sign"><span>Outgoing supervisor</span><span>Incoming supervisor</span></div>';
-    h += '<div class="card dock noprint"><div class="dockrow">' + (S.role && !S.canEdit ? '<button class="btn primary" data-act="ho-submit">Submit for review</button>' : '') + '<button class="btn primary" data-act="ho-export">' + ic('dl', 16) + 'Export Excel</button><button class="btn wa" data-act="ho-wa">' + ic('share', 16) + 'WhatsApp</button><button class="btn" data-act="ho-sharefile">' + ic('share', 16) + 'Share file</button><button class="btn" data-act="print-ho">' + ic('clip', 16) + 'Print / PDF</button><button class="btn" data-act="share-ho">' + ic('share', 16) + 'Share text</button><button class="btn" data-act="ho-reset">Reset marks</button><button class="btn danger" data-act="ho-clear">Clear handover</button></div></div>';
+    h += '<div class="card dock noprint"><div class="dockrow">' + (S.role && (!S.canEdit || myNA()) ? '<button class="btn primary" data-act="ho-submit">Submit for review</button>' : '') + '<button class="btn primary" data-act="ho-export">' + ic('dl', 16) + 'Export Excel</button><button class="btn wa" data-act="ho-wa">' + ic('share', 16) + 'WhatsApp</button><button class="btn" data-act="ho-sharefile">' + ic('share', 16) + 'Share file</button><button class="btn" data-act="print-ho">' + ic('clip', 16) + 'Print / PDF</button><button class="btn" data-act="share-ho">' + ic('share', 16) + 'Share text</button><button class="btn" data-act="ho-reset">Reset marks</button><button class="btn danger" data-act="ho-clear">Clear handover</button></div></div>';
     box.innerHTML = h; hydrateIcons(box);
   }
 
@@ -1770,7 +1775,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function piSplit(t) { var out = []; String(t || '').split(/[\s,;.\-\/]+/).forEach(function (x) { var n = piNorm(x); if (n && n !== 'B' && out.indexOf(n) < 0) out.push(n); }); return out; }
   function piWo(w) { return String(w || '').toUpperCase().replace(/\s+/g, ''); }
   function piKey(wo, b, coat) { return piWo(wo) + '|' + piNorm(b) + '|' + coat; }
-  function piList() { return ST.reports.filter(function (r) { return r.kind === 'pi' && r.st !== 'removed' && r.pi; }).sort(function (a, b) { return (b.pi.date || '').localeCompare(a.pi.date || '') || b.ts - a.ts; }); }
+  function piList() { return ST.reports.filter(function (r) { return r.kind === 'pi' && r.st !== 'removed' && r.pi && apSeen(r); }).sort(function (a, b) { return (b.pi.date || '').localeCompare(a.pi.date || '') || b.ts - a.ts; }); }
   function piCan() { return !!S.role; }
   var piPhoto = null;
   function phDb() { return new Promise(function (res, rej) { try { var q = indexedDB.open('aic-pi', 1); q.onupgradeneeded = function () { q.result.createObjectStore('ph'); }; q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; } catch (e) { rej(e); } }); }
@@ -1782,7 +1787,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var m = 1280, k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); if (c.toBlob) c.toBlob(function (b) { cb(b || file); }, 'image/jpeg', 0.72); else cb(file); }; im.onerror = function () { cb(null); }; im.src = rd.result; }; rd.onerror = function () { cb(null); }; rd.readAsDataURL(file);
   }
-  function piClaims() { return ST.reports.filter(function (r) { return r.kind === 'pc' && r.st !== 'removed' && r.pc; }).sort(function (a, b) { return b.ts - a.ts; }); }
+  function piClaims() { return ST.reports.filter(function (r) { return r.kind === 'pc' && r.st !== 'removed' && r.pc && apSeen(r); }).sort(function (a, b) { return b.ts - a.ts; }); }
   function piBayMap() { var m = {}; if (!S.shift) return m; S.shift.rows.forEach(function (r) { r.items.forEach(function (it) { var k = piWo(r.wo) + '|' + piNorm(it.batch); (m[k] = m[k] || []); if (m[k].indexOf(r.bay) < 0) m[k].push(r.bay); }); }); return m; }
   function piCheck() {
     if (!S.shift) return null;
@@ -1861,7 +1866,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     recs.forEach(function (r) {
       var p = r.pi; tl += p.l;
       if (p.date !== day) { day = p.date; h += '<div class="pid">' + esc(day) + '</div>'; }
-      var mk = p.mk === 'ok' ? '<span class="p ok">Verified</span>' : p.mk === 'bad' ? '<span class="p sh">Disputed</span>' : '';
+      var mk = (r.ap === 'wait' ? '<span class="p sh">Waiting for approval</span> ' : r.ap === 'no' ? '<span class="p sh">Rejected</span> ' : '') + (p.mk === 'ok' ? '<span class="p ok">Verified</span>' : p.mk === 'bad' ? '<span class="p sh">Disputed</span>' : '');
       h += '<div class="pir"><div class="pit1"><b>' + esc(p.wo) + '</b> · ' + esc(p.coat) + ' <span class="pil">' + piL(p.l) + ' L</span> ' + mk + '</div><div class="pib2">' + p.batches.map(function (b) { var bm = bays[piWo(p.wo) + '|' + b]; return '<span class="pic">' + esc(b) + (bm ? ' \u00b7 ' + esc(bm.join('/')) : '') + '</span>'; }).join('') + '</div>' +
         '<div class="pim">' + (p.prod ? esc(p.prod) + ' · ' : '') + 'by ' + esc(r.by || '') + (p.recv ? ' · received by ' + esc(p.recv) : '') + (p.note ? ' · ' + esc(p.note) : '') + '</div>' +
          '<div class="piact">' + (p.ph ? '<button class="btn sm" data-pi="ph" data-id="' + esc(r.id) + '">Photo</button>' : '') + (S.canEdit ? '<button class="btn sm" data-pi="mk" data-id="' + esc(r.id) + '" data-v="ok">Verified</button><button class="btn sm" data-pi="mk" data-id="' + esc(r.id) + '" data-v="bad">Disputed</button>' : '') +
@@ -1912,7 +1917,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (!wo) { toast('Enter the project (W.O).'); return; } if (!piBatches.length) { toast('Add at least one batch number.'); return; } if (!(l > 0)) { toast('Enter the liters issued.'); return; }
     var now = Date.now(), me = realName();
     var nid = 'i' + syRid(), hasPh = !!piPhoto;
-    ST.reports.unshift({ id: nid, ts: now, by: me, st: 'pending', kind: 'pi', pub: false, notify: false, dec: '', u: now, text: 'Paint issue', pi: { date: date, wo: wo, coat: coat, batches: piBatches.slice(), l: Math.round(l * 100) / 100, prod: '', recv: ($('pi-recv').value || '').trim(), note: ($('pi-note').value || '').trim(), mk: '', ph: hasPh ? 1 : 0 } });
+    ST.reports.unshift({ id: nid, ts: now, by: me, st: 'pending', kind: 'pi', ap: myNA() ? 'wait' : '', pub: false, notify: false, dec: '', u: now, text: 'Paint issue', pi: { date: date, wo: wo, coat: coat, batches: piBatches.slice(), l: Math.round(l * 100) / 100, prod: '', recv: ($('pi-recv').value || '').trim(), note: ($('pi-note').value || '').trim(), mk: '', ph: hasPh ? 1 : 0 } });
     if (hasPh) { var pb = piPhoto; phPut(nid, pb).catch(function () { toast('Could not keep the photo on this phone.'); }); piPhoto = null; }
     stMeta(); piBatches = []; piMsg = 'Saved: ' + piL(l) + ' L for ' + wo + ' · ' + coat; piRender(); try { fillHome(); } catch (e) {}
     if (!SY.on) toast('Saved on this device. Connect Sync to share it with the team.');
@@ -1953,7 +1958,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   }
   function piSaveClaim() {
     var c = piClaimData(); if (!c || !c.rows.length) { toast('Nothing is short.'); return; } var now = Date.now();
-    ST.reports.unshift({ id: 'c' + syRid(), ts: now, by: realName(), st: 'pending', kind: 'pc', pub: false, notify: false, dec: '', u: now, text: 'Paint claim', pc: { date: c.date, short: Math.round(c.short * 10) / 10, rows: c.rows, groups: c.groups, status: 'Requested', note: '' } });
+    ST.reports.unshift({ id: 'c' + syRid(), ts: now, by: realName(), st: 'pending', kind: 'pc', ap: myNA() ? 'wait' : '', pub: false, notify: false, dec: '', u: now, text: 'Paint claim', pc: { date: c.date, short: Math.round(c.short * 10) / 10, rows: c.rows, groups: c.groups, status: 'Requested', note: '' } });
     stMeta(); piTab = 'cl'; piRender(); toast('Claim saved. Track it in the Claims tab.');
   }
   function piClaimsHtml() {
@@ -2237,6 +2242,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         '\nUpdated: ' + upd.length + (upd.length ? ' (' + upd.slice(0, 8).map(function (u) { return u.x.wo; }).join(', ') + (upd.length > 8 ? ', ...' : '') + ')' : '') + '\nUnchanged: ' + same +
         '\n\nUpdated projects take the paint data from the file. Projects that are not in the file stay as they are. Apply?';
       askYes(msg, function () {
+      if (myNA()) { add.forEach(function (x) { apSend('pd', { id: x.wo, wo: x.wo, systems: x.systems, isNew: true }, true); }); upd.forEach(function (u) { apSend('pd', { id: u.p._id, wo: u.x.wo, systems: u.x.systems }, true); }); renderAll(); toast((add.length + upd.length) + ' project change' + (add.length + upd.length > 1 ? 's' : '') + ' sent for approval.'); return; }
       add.forEach(function (x) { S.projects.push({ _id: x.wo, id: x.wo, wo: x.wo, createdAt: Date.now(), systems: x.systems }); });
       upd.forEach(function (u) { u.p.systems = u.x.systems; });
       persistProjects(); S.shift && S.shift.rows.forEach(function (r) { r.pid = (matchProject(r.wo) || {})._id || r.pid; fillRow(r); }); saveShift && saveShift();
@@ -2304,7 +2310,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function isAdminName(n) { n = String(n || '').trim().toLowerCase(); return !!n && ST.admins.some(function (a) { return String(a).trim().toLowerCase() === n; }); }
   function myAdmin() { return isAdminName(realName()); }
   function lc(n) { return String(n || '').trim().toLowerCase(); }
-  function sharing() { return !!(S.pwOk && myAdmin()); }
+  function sharing() { return !!(S.pwOk && myAdmin() && !myNA()); }
   var STAFF = /^(manager|supervisor|engineer)$/, WORKER = /^(foreman|checker|painter)$/;
   function roleOf(n) { n = lc(n); if (!n) return ''; if (n === lc(OWNER_NAME)) return 'owner'; var e = ST.roles[n], r = e && e.r === 'paint' ? 'painter' : e && e.r; if (r && WORKER.test(r) && ST.apw[n]) return r; if (isAdminName(n)) return r && STAFF.test(r) ? r : 'supervisor'; return ''; }
   function pdOf(n) { n = lc(n); if (n === lc(OWNER_NAME)) return true; var e = ST.roles[n]; return !!(e && (e.pd || e.r === 'paint')); }
@@ -2534,10 +2540,11 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (M.bays && (M.bays.u || 0) > (L.bays.u || 0) && M.bays.by && M.bays.by !== me) out.push({ k: 'bays', ti: 'Bays', m: M.bays.by + ' changed the bay list', g: { t: 'record', id: '' } });
     var lr = {}; (L.reports || []).forEach(function (r) { lr[r.id] = r; });
     (M.reports || []).forEach(function (r) {
-      if (r.kind === 'pi' || r.kind === 'pc') return;
       var o = lr[r.id];
+      if (AP_K.test(r.kind) || ((r.kind === 'pi' || r.kind === 'pc') && r.ap)) { apNotes(r, o, me, push, out); return; }
+      if (r.kind === 'pi' || r.kind === 'pc') return;
       if (!o) {
-        if (r.kind === 'ho' && r.st === 'pending' && push) { reviewerNames(r.by).forEach(function (n) { out.push({ k: 'hor', to: n, ti: 'Handover for review', m: r.by + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }); }
+        if (r.kind === 'ho' && r.st === 'pending' && push) { (naOf(r.by) ? approverNames(r.by) : reviewerNames(r.by)).forEach(function (n) { out.push({ k: 'hor', to: n, ti: 'Handover for review', m: r.by + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }); }
         else if (r.kind === 'ho' && r.st === 'pending') { if (amAdm && r.by !== me) out.push({ k: 'hor', ti: 'Handover for review', m: r.by + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }
         else if (r.st === 'pending' && amAdm && r.by !== me) out.push({ k: 'rep', ti: 'New report', m: r.by + ' reported a problem: ' + repLine(r), g: { t: 'reports', id: r.id } });
         else if (r.st === 'published' && r.notify && r.by !== me && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
@@ -2567,10 +2574,10 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var first = SY.et[part] == null, L = P.local(), M = P.merge(L, rem.doc), msgs = rem.doc && !first ? P.changes(L, M) : [];
       if (P.sig(L) !== P.sig(M)) P.apply(M);
       /* log sheet marks and handovers (main) reach the team only from supervisors, or once when a reviewer issues a final handover; foremen send theirs through Submit for review */
-      var shr = part === 'main' ? (sharing() || !!S.rvPush) : (sharing() || canPaint() || (canReview() && S.role !== 'owner' && !S.canEdit)); var Mp = shr ? M : P.limit(rem.doc, M);
+      var shr = part === 'main' ? (sharing() || !!S.rvPush) : (sharing() || !!S.mpPush || (!myNA() && (canPaint() || (canReview() && S.role !== 'owner' && !S.canEdit)))); var Mp = shr ? M : P.limit(rem.doc, M);
       var need = !Mp ? false : (!rem.doc ? (shr || (Mp.reports || []).length > 0) : P.sig(Mp) !== P.sig(rem.doc));
       var pushItems = Mp && rem.doc && !first ? P.changes(rem.doc, Mp, '\u0001') : [];
-      var done = function (at) { if (part === 'main') S.rvPush = false; if (pushItems.length) pushSend(pushItems); SY.et[part] = at; SY.dm[part] = false; SY.last = Date.now(); SY.err = ''; sySave(); msgs.forEach(function (m) { bag.push(m); }); };
+      var done = function (at) { if (part === 'main') S.rvPush = false; else S.mpPush = false; if (pushItems.length) pushSend(pushItems); SY.et[part] = at; SY.dm[part] = false; SY.last = Date.now(); SY.err = ''; sySave(); msgs.forEach(function (m) { bag.push(m); }); };
       if (!need) { done(rem.at); return; }
       var at = Date.now(), h = { 'Content-Type': 'application/json' }; if (rem.tag) h['if-match'] = rem.tag;
       return fetch(syUrl('/' + part), { method: 'PUT', headers: h, body: JSON.stringify({ at: at, by: syName(), d: JSON.stringify(Mp) }) }).then(function (p) {
@@ -2613,6 +2620,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     } else if (t === 'record') {
       location.hash = 'record'; showTab('record');
       if (g.id) { var sel = $('project'); if (sel && [].some.call(sel.options, function (o) { return o.value === g.id; })) { sel.value = g.id; fillSystemSelect(); renderResult(); flashEl(sel); } }
+    } else if (t === 'home') {
+      location.hash = 'home'; showTab('home'); setTimeout(function () { var ac = $('apcard'); if (ac && !ac.hidden) flashEl(ac); }, 150);
     } else if (t === 'reports') {
       location.hash = 'reports'; showTab('reports');
       if (g.id) setTimeout(function () { flashEl(document.querySelector('[data-rep="' + g.id + '"]')); }, 150);
@@ -2815,7 +2824,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var k = lc(n), r = roleOf(n);
       return '<div class="row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1;min-width:90px">' + esc(n) + (ST.apw[k] ? '' : ' <span class="chip">NO PASSWORD</span>') + '</b>' +
         '<select data-usr="role" data-n="' + esc(n) + '" aria-label="Role" style="width:auto">' + roleOpts(r) + '</select>' +
-        '<label class="fine" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-usr="pd" data-n="' + esc(n) + '" style="width:auto"' + (pdOf(n) ? ' checked' : '') + '> Paint data</label><label class="fine" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-usr="rv" data-n="' + esc(n) + '" style="width:auto"' + (rvOf(n) ? ' checked' : '') + (STAFF.test(r) ? ' disabled' : '') + '> Review</label>' +
+        '<label class="fine" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-usr="pd" data-n="' + esc(n) + '" style="width:auto"' + (pdOf(n) ? ' checked' : '') + '> Paint data</label><label class="fine" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-usr="rv" data-n="' + esc(n) + '" style="width:auto"' + (rvOf(n) ? ' checked' : '') + (STAFF.test(r) ? ' disabled' : '') + '> Review</label><label class="fine" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-usr="na" data-n="' + esc(n) + '" style="width:auto"' + (naOf(n) ? ' checked' : '') + '> Needs approval</label>' + abBox(n) +
         '<button class="btn sm" data-x="adm-pw" data-n="' + esc(n) + '">New password</button><button class="ibtn" data-x="adm-del" data-n="' + esc(n) + '" aria-label="Remove user">' + ic('trash') + '</button></div>';
     }).join('') : '<p class="muted" style="margin:0 0 6px">No users yet.</p>';
     return h + '<div class="addrow" style="flex-wrap:wrap"><div class="f"><input id="adm-name" type="text" maxlength="30" placeholder="Name exactly as the person types it in Settings" autocomplete="off"></div><select id="adm-role" aria-label="Role" style="width:auto">' + roleOpts('supervisor') + '</select><label class="fine" style="display:flex;gap:4px;align-items:center"><input id="adm-pd" type="checkbox" style="width:auto"> Paint data</label><label class="fine" style="display:flex;gap:4px;align-items:center"><input id="adm-rv" type="checkbox" style="width:auto"> Review</label><button class="btn" data-x="adm-add">Add user</button></div></div>';
@@ -2844,10 +2853,10 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function repStChip(r) { var m = { pending: ['Waiting for admin', ''], published: ['Published', 'ok'], dismissed: ['Closed', ''], deleted: ['Record removed', ''] }[r.st] || ['', '']; return '<span class="chip ' + m[1] + '">' + m[0] + '</span>'; }
   function renderReports() {
     var box = $('tab-reports'); if (!box) return;
-    var adm = repAdmin(), me = realName(), pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'ho' && r.kind !== 'pi' && r.kind !== 'pc'; }).length;
+    var adm = repAdmin(), me = realName(), pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'ho' && r.kind !== 'pi' && r.kind !== 'pc' && !AP_K.test(r.kind); }).length;
     var tb = document.querySelector('.tabs button[data-tab=reports]'); if (tb) tb.textContent = 'Reports' + (myAdmin() && pend ? ' (' + pend + ')' : '');
     if (S.tab !== 'reports') return;
-    var vis = ST.reports.filter(function (r) { return r.kind !== 'ho' && r.kind !== 'pi' && r.kind !== 'pc' && r.st !== 'removed' && (adm || r.st === 'published' || r.by === me); }).sort(function (a, b) { return b.ts - a.ts; });
+    var vis = ST.reports.filter(function (r) { return r.kind !== 'ho' && r.kind !== 'pi' && r.kind !== 'pc' && !AP_K.test(r.kind) && r.st !== 'removed' && (adm || r.st === 'published' || r.by === me); }).sort(function (a, b) { return b.ts - a.ts; });
     var h = '<div class="card"><div class="eh"><h2 style="margin:0;font-size:1.05rem;font-weight:600">Report a problem</h2></div><p class="muted" style="margin:0 0 8px">Anyone can report. Your report goes to the admins first. If they publish it, everyone sees it and gets a notification. To report a wrong record, use the flag button on that record in the Daily log.</p>' +
       '<div class="f"><label for="rp-bay">Bay or area</label><select id="rp-bay">' + S.bays.map(function (b) { return '<option value="' + esc(b.id) + '">' + esc(b.name) + '</option>'; }).join('') + '<option value="__area">Painting Area</option></select></div>' +
       '<div class="f" style="margin-top:8px"><label for="rp-text">What is the problem?</label><textarea id="rp-text" rows="3" maxlength="400" placeholder="e.g. Blasting equipment is down, do not start coating"></textarea></div><div class="actions"><button class="btn primary" data-x="rp-bay">Send to admins</button></div></div>';
@@ -2905,7 +2914,99 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (u === 'role') { en.r = t.value; ST.admins = ST.admins.filter(function (a) { return lc(a) !== k; }); if (STAFF.test(t.value)) ST.admins.push(n); }
     else if (u === 'pd') en.pd = t.checked;
     else if (u === 'rv') en.rv = t.checked;
+    else if (u === 'na') { en.na = t.checked; if (en.na && !(en.ab && en.ab.length)) en.ab = ['admin', 'supervisor']; }
     ST.au = Date.now(); stMeta(); renderAdmin(); toast('Saved.');
+  });
+
+
+  /* ---------- approvals: people marked "Needs approval" send their work to chosen positions first ---------- */
+  var AP_K = /^(pd|rc|ls)$/, AP_POS = [['admin', 'Admin'], ['manager', 'Manager'], ['supervisor', 'Supervisor'], ['engineer', 'Engineer']];
+  function naOf(n) { n = lc(n); if (!n || n === lc(OWNER_NAME)) return false; var e = ST.roles[n]; return !!(e && e.na); }
+  function myNA() { return !!S.role && naOf(realName()); }
+  function abOf(n) { var e = ST.roles[lc(n)], a = e && e.ab && e.ab.length ? e.ab.slice() : ['admin', 'supervisor']; if (a.indexOf('admin') < 0) a.unshift('admin'); return a; }
+  function posOf(n) { var r = roleOf(n); return r === 'owner' ? 'admin' : r; }
+  function canApproveFor(by) { if (!S.role || !naOf(by) || lc(by) === lc(realName())) return false; return abOf(by).indexOf(posOf(realName())) > -1; }
+  function apWho(by) { return abOf(by).map(function (k) { for (var i = 0; i < AP_POS.length; i++) if (AP_POS[i][0] === k) return AP_POS[i][1]; return k; }).join(' / '); }
+  function approverNames(by) {
+    var out = [], seen = {}, ab = abOf(by); function add(n) { var k = lc(n); if (n && !seen[k] && k !== lc(by)) { seen[k] = 1; out.push(n); } }
+    if (ab.indexOf('admin') > -1) add(OWNER_NAME);
+    (ST.admins || []).concat(Object.keys(ST.roles || {}).map(function (k) { return (ST.roles[k] || {}).n || k; })).forEach(function (n) { if (ab.indexOf(posOf(n)) > -1) add(n); });
+    return out;
+  }
+  function apSeen(r) { return !r.ap || r.ap === 'ok' || lc(r.by) === lc(realName()) || (r.ap === 'wait' && canApproveFor(r.by)); }
+  function apLabel(r) {
+    if (r.kind === 'pd') return 'Paint data · ' + (r.pd.isNew ? 'new project ' : '') + r.pd.wo + ' · ' + (r.pd.systems || []).length + ' system' + ((r.pd.systems || []).length === 1 ? '' : 's');
+    if (r.kind === 'rc') { var c = r.rc.rec; return 'Daily record · ' + c.wo + ' · ' + c.coat + ' · ' + nf(c.liters || 0) + ' L · ' + (c.bayName || ''); }
+    if (r.kind === 'ls') return 'Log sheet · ' + r.ls.shift.date + ' · ' + r.ls.n + ' lines';
+    if (r.kind === 'pi') return 'Paint issued · ' + r.pi.wo + ' · ' + r.pi.coat + ' · ' + nf(r.pi.l) + ' L';
+    if (r.kind === 'pc') return 'Paint claim · ' + nf(r.pc.short || 0) + ' L short';
+    if (r.kind === 'ho') return 'Handover · ' + ((r.ho && r.ho.tasks) || []).length + ' steps';
+    return r.text || '';
+  }
+  function apSend(kind, data, quiet) {
+    var now = Date.now(), me = realName(), o = { id: 'a' + syRid(), ts: now, by: me, st: 'pending', kind: kind, pub: false, notify: false, dec: '', u: now, text: 'Approval' };
+    if (kind === 'pd') ST.reports.forEach(function (r) { if (r.kind === 'pd' && r.st === 'pending' && lc(r.by) === lc(me) && r.pd.id === data.id) { r.st = 'removed'; r.u = now; } });
+    o[kind] = data; ST.reports.unshift(o); stMeta(); renderAp();
+    if (!quiet || kind !== 'pd') toast('Sent to ' + apWho(me) + ' for approval. The team sees it after it is approved.');
+  }
+  function apPending() { return ST.reports.filter(function (r) { return ((AP_K.test(r.kind) && r.st === 'pending') || ((r.kind === 'pi' || r.kind === 'pc') && r.ap === 'wait')) && canApproveFor(r.by); }); }
+  function apMine() { var me = lc(realName()), cut = Date.now() - 864e5; return ST.reports.filter(function (r) { if (lc(r.by) !== me) return false; var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap; if (!(AP_K.test(r.kind) || r.ap || r.kind === 'ho')) return false; return a === 'pending' || a === 'wait' || ((a === 'published' || a === 'dismissed' || a === 'ok' || a === 'no') && (r.u || 0) > cut); }).slice(0, 8); }
+  function renderAp() {
+    var home = $('tab-home'); if (!home) return; var box = $('apcard');
+    if (!box) { box = document.createElement('div'); box.id = 'apcard'; var hero = home.querySelector('.hmhero'); if (hero && hero.nextSibling) home.insertBefore(box, hero.nextSibling); else home.appendChild(box); }
+    var L = S.role ? apPending().concat(hoPend().filter(function (r) { return naOf(r.by) && rvItemOk(r); })) : [], M = S.role && naOf(realName()) ? apMine() : [], h = '';
+    L.sort(function (a, b) { return b.ts - a.ts; });
+    if (L.length) h += '<div class="card apc"><div class="aph"><h2>Waiting for your approval</h2><span class="apn">' + L.length + '</span></div>' + L.map(function (r) {
+      return '<div class="apr"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div><div class="actions" style="margin-top:6px">' +
+        (r.kind === 'ho' ? '<button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '" data-goho="1">Review</button>' : (r.kind === 'pd' ? '<button class="btn sm" data-ap="see" data-id="' + esc(r.id) + '">See changes</button>' : '') + '<button class="btn sm primary" data-ap="ok" data-id="' + esc(r.id) + '">Approve</button><button class="btn sm danger" data-ap="no" data-id="' + esc(r.id) + '">Reject</button>') + '</div></div>';
+    }).join('') + '</div>';
+    if (M.length) h += '<div class="card apc"><div class="aph"><h2>Your requests</h2></div>' + M.map(function (r) {
+      var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap, s = a === 'pending' || a === 'wait' ? '<span class="chip">Waiting for approval</span>' : a === 'published' || a === 'ok' ? '<span class="chip ok">Approved by ' + esc(r.dec || '') + '</span>' : '<span class="chip">Rejected by ' + esc(r.dec || '') + '</span>';
+      return '<div class="apr"><span class="fine">' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span> ' + s + '</div>';
+    }).join('') + '<p class="fine" style="margin:6px 0 0">Approved by: ' + esc(apWho(realName())) + '</p></div>';
+    box.innerHTML = h; box.hidden = !h;
+  }
+  function apDecide(r, ok) {
+    var me = realName() || 'Admin', now = Date.now();
+    if (r.kind === 'pi' || r.kind === 'pc') { r.ap = ok ? 'ok' : 'no'; r.dec = me; r.u = now; stMeta(); renderAp(); if (typeof piRender === 'function') try { piRender(true); } catch (e) {} fillHome(); toast(ok ? 'Approved.' : 'Rejected.'); return; }
+    r.st = ok ? 'published' : 'dismissed'; r.dec = me; r.u = now;
+    if (ok && r.kind === 'pd') { var d = r.pd, p = getP(d.id); if (!p) { p = { _id: d.id, id: d.id, wo: d.wo, createdAt: now, systems: [] }; S.projects.push(p); } p.systems = clone(d.systems || []); delete p._new; S.mpPush = true; persistProjects(); if (S.shift) { S.shift.rows.forEach(function (x) { x.pid = (matchProject(x.wo) || {})._id || x.pid; fillRow(x); }); } }
+    if (ok && r.kind === 'rc') { var c = clone(r.rc.rec); delete c._h; if (!c.foreman) c.foreman = r.by; if (!S.records.some(function (x) { return x._id === c._id; })) { S.records.unshift(c); S.records.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); }); } S.rvPush = true; persistRecords(); }
+    if (ok && r.kind === 'ls') { var sh = clone(r.ls.shift), keep = S.shift && S.shift.hoBays ? S.shift.hoBays : []; sh.hoBays = keep; delete sh.created; S.shift = sh; S.shift.rows.forEach(fillRow); S.rvPush = true; saveShift(); }
+    stMeta(); syNow(true); renderAll(); toast(ok ? 'Approved and shared with the team.' : 'Rejected. ' + r.by + ' will be told.');
+  }
+  function apNotes(r, o, me, push, out) {
+    var lab = apLabel(r), a = AP_K.test(r.kind) ? r.st : r.ap, oa = o ? (AP_K.test(o.kind) ? o.st : o.ap) : '';
+    if (!o) {
+      if (a !== 'pending' && a !== 'wait') return;
+      if (push) approverNames(r.by).forEach(function (n) { out.push({ k: 'apr', to: n, ti: 'Approval needed', m: r.by + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } }); });
+      else if (r.by !== me && canApproveFor(r.by)) out.push({ k: 'apr', ti: 'Approval needed', m: r.by + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } });
+      return;
+    }
+    if (a === oa || !r.dec || r.dec === me) return;
+    var yes = a === 'published' || a === 'ok', no = a === 'dismissed' || a === 'no'; if (!yes && !no) return;
+    if (push || r.by === me) out.push({ k: 'apd', to: r.by, ti: yes ? 'Approved' : 'Rejected', m: 'Your ' + lab + ' was ' + (yes ? 'approved' : 'rejected') + ' by ' + r.dec, g: { t: 'home', id: '' } });
+  }
+  function abBox(n) {
+    if (!naOf(n)) return '';
+    var ab = abOf(n);
+    return '<div class="abbox"><span class="fine">Approved by (any person in these positions)</span><div class="abch">' + AP_POS.map(function (x) { var on = ab.indexOf(x[0]) > -1, lock = x[0] === 'admin'; return '<button type="button" class="abp" data-x="adm-ab" data-n="' + esc(n) + '" data-p="' + x[0] + '" aria-pressed="' + on + '"' + (lock ? ' disabled' : '') + '>' + (on ? '✓ ' : '') + x[1] + '</button>'; }).join('') + '</div></div>';
+  }
+  function apSee(r) {
+    var d = r.pd, p = getP(d.id), cur = p ? sysList(p) : [], h = '<p style="margin:0 0 8px;font-weight:600">' + esc(r.by) + ' · ' + esc(d.wo) + (d.isNew ? ' (new project)' : '') + '</p>';
+    (d.systems || []).forEach(function (s) { h += '<p style="margin:8px 0 4px"><b>' + esc(s.name) + '</b></p>' + (s.coats || []).map(function (c) { return '<div class="fine">' + esc(c.label) + ': ' + esc(c.paint || '-') + ' · DFT ' + (c.dft || '-') + ' · V.S ' + (c.vs || '-') + '</div>'; }).join(''); });
+    if (cur.length) h += '<p class="fine" style="margin:10px 0 0">Now in the app: ' + cur.map(function (s) { return esc(s.name) + ' (' + (s.coats || []).length + ' coats)'; }).join(', ') + '</p>';
+    var ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+    ov.innerHTML = '<div style="background:var(--surface,#fff);color:var(--ink,#111);border-radius:16px;max-width:440px;width:100%;max-height:80vh;overflow:auto;padding:18px">' + h + '<div class="actions" style="margin-top:12px"><button class="btn" data-apc="1">Close</button></div></div>';
+    ov.addEventListener('click', function (e) { if (e.target === ov || (e.target.getAttribute && e.target.getAttribute('data-apc'))) ov.parentNode.removeChild(ov); }); document.body.appendChild(ov);
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-ap],[data-goho],[data-x="adm-ab"]') : null; if (!el) return;
+    if (el.getAttribute('data-x') === 'adm-ab') { if (!S.owner) return; var n = el.getAttribute('data-n'), k = lc(n), pz = el.getAttribute('data-p'), en = ST.roles[k] || (ST.roles[k] = { n: n }), ab = abOf(n), i = ab.indexOf(pz); if (pz === 'admin') return; if (i > -1) ab.splice(i, 1); else ab.push(pz); en.ab = ab; ST.au = Date.now(); stMeta(); renderAdmin(); return; }
+    if (el.getAttribute('data-goho')) { setTimeout(function () { location.hash = 'handover'; showTab('handover'); }, 30); return; }
+    var r = repById(el.getAttribute('data-id')), a = el.getAttribute('data-ap'); if (!r || !canApproveFor(r.by)) return;
+    if (a === 'see') { apSee(r); return; }
+    askYes((a === 'ok' ? 'Approve' : 'Reject') + ' this?\n' + r.by + ' · ' + apLabel(r), function () { apDecide(r, a === 'ok'); }, a === 'ok' ? 'Approve' : 'Reject');
   });
 
   /* --- who is online (admins see it in the Sync panel) --- */
@@ -2980,7 +3081,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v57';
+  var BUILD = 'aic-paint-v58';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
