@@ -3192,7 +3192,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function abOf(n) { var e = ST.roles[lc(n)], a = e && e.ab && e.ab.length ? e.ab.slice() : ['admin', 'supervisor']; if (a.indexOf('admin') < 0) a.unshift('admin'); return a; }
   function posOf(n) { var r = roleOf(n); return r === 'owner' ? 'admin' : r; }
   function canApproveFor(by) { if (!S.role || !naOf(by) || lc(by) === lc(realName())) return false; return abOf(by).indexOf(posOf(realName())) > -1; }
-  function apWho(by) { return abOf(by).map(function (k) { for (var i = 0; i < AP_POS.length; i++) if (AP_POS[i][0] === k) return AP_POS[i][1]; return k; }).join(' / '); }
+  function apWho(by) { var o = []; abOf(by).forEach(function (k) { var l = k === 'admin' ? 'Engineer' : k; for (var i = 0; i < AP_POS.length; i++) if (k !== 'admin' && AP_POS[i][0] === k) l = AP_POS[i][1]; if (o.indexOf(l) < 0) o.push(l); }); return o.join(' or '); }
   function approverNames(by) {
     var out = [], seen = {}, ab = abOf(by); function add(n) { var k = lc(n); if (n && !seen[k] && k !== lc(by)) { seen[k] = 1; out.push(n); } }
     if (ab.indexOf('admin') > -1) add(OWNER_NAME);
@@ -3291,7 +3291,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function abBox(n) {
     if (!naOf(n)) return '';
     var ab = abOf(n);
-    return '<div class="abbox"><span class="fine">Approved by (any person in these positions)</span><div class="abch">' + AP_POS.map(function (x) { var on = ab.indexOf(x[0]) > -1, lock = x[0] === 'admin'; return '<button type="button" class="abp" data-x="adm-ab" data-n="' + esc(n) + '" data-p="' + x[0] + '" aria-pressed="' + on + '"' + (lock ? ' disabled' : '') + '>' + (on ? '✓ ' : '') + x[1] + '</button>'; }).join('') + '</div></div>';
+    return '<div class="abbox"><span class="fine">Approved by (any person in these positions)</span><div class="abch">' + AP_POS.map(function (x) { var on = ab.indexOf(x[0]) > -1, lock = x[0] === 'admin'; return '<button type="button" class="abp" data-x="adm-ab" data-n="' + esc(n) + '" data-p="' + x[0] + '" aria-pressed="' + on + '"' + (lock ? ' disabled' : '') + '>' + (on ? '✓ ' : '') + (lock ? 'You (always)' : x[1]) + '</button>'; }).join('') + '</div></div>';
   }
   function apSee(r) {
     var d = r.pd, p = getP(d.id), cur = p ? sysList(p) : [], h = '<p style="margin:0 0 8px;font-weight:600">' + esc(r.by) + ' · ' + esc(d.wo) + (d.isNew ? ' (new project)' : '') + '</p>';
