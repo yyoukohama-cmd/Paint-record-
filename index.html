@@ -1024,7 +1024,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         }).join('') + '</div>' + updHtml(ST.bby, ST.bu) + '</div><div class="actions"><button class="btn sm" data-act="add-bay">' + ic('plus', 16) + 'Add bay</button></div>';
       var data = '<div class="actions"><button class="btn primary" data-act="download-app">' + ic('dl', 16) + 'Download updated file</button><button class="btn" data-act="import-book">' + ic('dl', 16) + 'Import paint data (.xlsx)</button><button class="btn" data-act="goto-projects">' + ic('plus', 16) + 'Add project manually</button><button class="btn" data-act="send-upd">Send update notice to team</button></div><p class="fine" style="margin:0">Use the same Excel layout as Book7: Project, Treatment, Coat, Item Code, Item Description, DFT, V.S. New projects are added and changed projects are updated.</p>';
       box.innerHTML = '<div class="eh"><h2 style="margin:0;font-size:1.05rem;font-weight:600">Admin <span class="chip ok">' + roleLabel(S.role) + '</span></h2><button class="btn sm" data-act="lock">Lock</button></div>' +
-        '<p class="muted" style="margin:0">' + (!S.canEdit ? 'You are signed in on this phone. ' + (!S.canEdit ? 'Create the handover as usual, then tap Submit for review so a supervisor can check it. ' : '') : '') + (SY.on ? 'Project, paint and bay changes are shared with the team automatically.' : 'Connect Sync so project and paint changes reach the team. Without Sync they stay on this device until you download the updated file.') + '</p>' +
+        '<p class="muted" style="margin:0">' + (!S.canEdit ? 'You are signed in on this phone. ' + (myNA() ? 'Your work needs approval: create the handover, then send it for review. ' : 'Your work does not need approval: your handover goes straight to the team. ') : '') + (SY.on ? 'Project, paint and bay changes are shared with the team automatically.' : 'Connect Sync so project and paint changes reach the team. Without Sync they stay on this device until you download the updated file.') + '</p>' +
         (canPaint() ? secBox('data', 'Paint data', data) : '') + (S.canEdit ? secBox('bays', 'Paint bays', bays) : '') + (S.owner ? secBox('adm', 'Users', admBox()) + secBox('push', 'Background alerts', pushBox()) + secBox('clr', 'Free up space', clrBox()) : '');
     }
   }
@@ -1129,7 +1129,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'toggle-bat') { lsSet('aic-lsbatch', showBat() ? '0' : '1'); renderShift(); }
     else if (act === 'pick-hobay') { if (S.shift) { var all = groupBays(S.shift.rows).map(function (g) { return g.bay; }), sl = (S.shift.hoBays || []).slice(), k = sl.indexOf(id); if (k > -1) sl.splice(k, 1); else sl.push(id); S.shift.hoBays = sl; saveShift(); var bpk = document.querySelector('#shiftout .baypick'), psl = bpk ? bpk.scrollLeft : 0, py = window.scrollY; renderShift(); var bpk2 = document.querySelector('#shiftout .baypick'); if (bpk2) bpk2.scrollLeft = psl; window.scrollTo(0, py); } }
     else if (act === 'ho-submit') {
-      if (!S.role || (S.canEdit && !myNA())) return; if (!S.ho || !S.ho.tasks.length) { toast('Create a handover first.'); return; }
+      if (!S.role || hoShares()) return; if (!S.ho || !S.ho.tasks.length) { toast('Create a handover first.'); return; }
       askYes('Send this handover to a supervisor for review?', function () {
         var now = Date.now(), me = realName(); ST.reports.forEach(function (r) { if (r.kind === 'ho' && r.st === 'pending' && lc(r.by) === lc(me)) { r.st = 'removed'; r.u = now; } });
         var c = clone(S.ho); delete c.sub; delete c.gone; delete c.ids; c.tasks.forEach(function (t) { delete t._h; });
@@ -1172,7 +1172,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'ho-paint') { lsSet('aic-hopaint', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'ho-items') { lsSet('aic-hoitems', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'del-x') { var rx = findRow(id); if (rx) { rx.extras.splice(+b.getAttribute('data-xi'), 1); saveShift(); renderShift(); } }
-    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = S.canEdit && !myNA() ? hoPend().filter(function (r) { return !r.hm && lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); var cf0 = S.hoCfl || []; S.hoCfl = null; if (cf0.length) setTimeout(function () { askYes('\u26a0 Different reports for the same material:\n' + cflMsg(cf0) + '\nCheck them in the final handover.', function () {}, 'OK'); }, 900); if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast((hoShares() ? 'Handover created' : 'Draft created') + (cr ? ' (' + cr + ' carried over)' : '') + '.'); if (!hoShares() && S.role && S.hd && S.hd.tasks.length) setTimeout(function () { var sb = document.querySelector('[data-act=hd-submit]'); if (sb) sb.click(); }, 400); }; if (S.canEdit) { var pbays = function (r) { var o = []; ((r.ho && r.ho.tasks) || []).forEach(function (t) { if (o.indexOf(t.bay) < 0) o.push(t.bay); }); return o; }, ov = pend0.filter(function (r) { return pbays(r).some(function (b) { return sel0.indexOf(b) > -1; }); }); askYes('Create the handover for ' + sel0.join(', ') + ' and add it to the final handover?' + (pend0.length ? '\n' + pend0.map(function (r) { return pn(r.by) + ' (' + pbays(r).join(', ') + ')'; }).join(', ') + ' stays waiting for review and is added when approved.' : '') + (ov.length ? '\n\u26a0 Same bay in both: differences will be flagged.' : ''), doMake, 'Create handover'); } else doMake(); }
+    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = hoShares() ? hoPend().filter(function (r) { return !r.hm && lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); var cf0 = S.hoCfl || []; S.hoCfl = null; if (cf0.length) setTimeout(function () { askYes('\u26a0 Different reports for the same material:\n' + cflMsg(cf0) + '\nCheck them in the final handover.', function () {}, 'OK'); }, 900); if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast((hoShares() ? 'Handover created' : 'Draft created') + (cr ? ' (' + cr + ' carried over)' : '') + '.'); if (!hoShares() && S.role && S.hd && S.hd.tasks.length) setTimeout(function () { var sb = document.querySelector('[data-act=hd-submit]'); if (sb) sb.click(); }, 400); }; if (hoShares()) { var pbays = function (r) { var o = []; ((r.ho && r.ho.tasks) || []).forEach(function (t) { if (o.indexOf(t.bay) < 0) o.push(t.bay); }); return o; }, ov = pend0.filter(function (r) { return pbays(r).some(function (b) { return sel0.indexOf(b) > -1; }); }); askYes('Create the handover for ' + sel0.join(', ') + ' and add it to the final handover?' + (pend0.length ? '\n' + pend0.map(function (r) { return pn(r.by) + ' (' + pbays(r).join(', ') + ')'; }).join(', ') + ' stays waiting for review and is added when approved.' : '') + (ov.length ? '\n\u26a0 Same bay in both: differences will be flagged.' : ''), doMake, 'Create handover'); } else doMake(); }
     else if (act === 'print-ho') printHo();
     else if (act === 'share-ho') shareHo();
     else if (act === 'clear-shift') { askYes('Clear the imported log sheet and all its statuses?', function () { S.shift = null; saveShift(); renderShift(); }, 'Clear log sheet'); }
@@ -1528,7 +1528,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var b = e.target.closest ? e.target.closest('[data-act="ar-on"],[data-act="ar-bay"],[data-act="cf-ok"]') : null; if (!b) return; var a = b.getAttribute('data-act');
     if (a === 'ar-on') lsSet('aic-areaon', b.getAttribute('data-v'));
     else if (a === 'ar-bay') { var n = b.getAttribute('data-n'), L = myArea(), i = L.indexOf(n); if (i > -1) L.splice(i, 1); else L.push(n); lsSet('aic-myarea', JSON.stringify(L)); }
-    else if (a === 'cf-ok' && S.ho) { var k = b.getAttribute('data-id'); S.ho.cfl = (S.ho.cfl || []).filter(function (c) { return c.k !== k; }); saveHo(); if (S.canEdit && !myNA()) syNow(true); }
+    else if (a === 'cf-ok' && S.ho) { var k = b.getAttribute('data-id'); S.ho.cfl = (S.ho.cfl || []).filter(function (c) { return c.k !== k; }); saveHo(); if (hoShares()) syNow(true); }
     var y = window.scrollY; renderHo(); window.scrollTo(0, y);
   });
   /* the people the final handover is handed over to: picked from Users, each one is notified */
@@ -1611,7 +1611,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         var n = r.ho && r.ho.tasks ? r.ho.tasks.length : 0;
         return '<div class="f" style="padding:10px 0;border-top:1px solid var(--line)"><b>' + esc(pn(r.by)) + '</b> <span class="fine">· ' + esc(r.text || '') + ' · ' + n + ' steps · ' + fmtT(r.ts) + '</span><div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
       }).join('') + '</div>';
-    } else if (S.role && (!S.canEdit || myNA()) && lsGet('aic-sub')) {
+    } else if (S.role && !hoShares() && lsGet('aic-sub')) {
       var r0 = repById(lsGet('aic-sub')), msg = !r0 ? '' : r0.st === 'pending' ? 'Submitted. Waiting for a supervisor to review it.' + ((r0.sr || []).length ? ' Rejected so far: ' + esc(r0.sr.map(function (x) { return x.l + (x.n ? ' (' + x.n + ')' : ''); }).join('; ')) + '.' : '') : r0.st === 'published' && r0.sup ? 'Closed. ' + esc(r0.dec) + ' created the handover himself.' : r0.st === 'published' ? 'Confirmed by ' + esc(r0.dec) + '.' + (r0.nrej ? ' ' + r0.nrej + ' step' + (r0.nrej > 1 ? 's were' : ' was') + ' rejected: ' + esc((r0.rej || []).join('; ')) + '.' : '') : r0.st === 'dismissed' ? 'Rejected by ' + esc(r0.dec) + '. Fix it and submit again.' : '';
       if (msg) h += '<div class="card noprint"><p style="margin:0"><b>Review status:</b> ' + msg + '</p></div>';
     }
@@ -1680,7 +1680,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   S.hd = null; try { S.hd = JSON.parse(lsGet('aic-hd-v1') || 'null'); } catch (e) { S.hd = null; }
   S.hoView = 'final';
   function saveHd() { lsSet('aic-hd-v1', JSON.stringify(S.hd)); }
-  function hoShares() { return !!(S.canEdit && !myNA()); }
+  /* "Needs approval" unticked in Users = his work goes straight to the team, whatever his position */
+  function hoShares() { return !!S.role && !myNA(); }
   function whoHtml(t) { var a = t.cb || '', m = t.mb || ''; if (!a && !m) return ''; return '<div class="small who">By <b>' + esc(pn(a || m)) + '</b>' + (m && a && lc(m) !== lc(a) ? ' · marked by <b>' + esc(pn(m)) + '</b>' : '') + '</div>'; }
   function posName(n) { var r = roleOf(n); return r ? roleLabel(r).charAt(0) + roleLabel(r).slice(1).toLowerCase() : ''; }
   function pn(n) { n = String(n || '').trim(); if (!n) return ''; var p = posName(n); return p ? n + ' (' + p + ')' : n; }
@@ -2930,7 +2931,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       var first = SY.et[part] == null, L = P.local(), M = P.merge(L, rem.doc), msgs = rem.doc && !first ? P.changes(L, M) : [];
       if (P.sig(L) !== P.sig(M)) P.apply(M);
       /* log sheet marks and handovers (main) reach the team only from supervisors, or once when a reviewer issues a final handover; foremen send theirs through Submit for review */
-      var shr = part === 'main' ? (sharing() || !!S.rvPush) : (sharing() || !!S.mpPush || (!myNA() && (canPaint() || (canReview() && S.role !== 'owner' && !S.canEdit)))); var Mp = shr ? M : P.limit(rem.doc, M);
+      var shr = part === 'main' ? (sharing() || !!S.rvPush || hoShares()) : (sharing() || !!S.mpPush || (!myNA() && (canPaint() || (canReview() && S.role !== 'owner' && !S.canEdit)))); var Mp = shr ? M : P.limit(rem.doc, M);
       var need = !Mp ? false : (!rem.doc ? (shr || (Mp.reports || []).length > 0) : P.sig(Mp) !== P.sig(rem.doc));
       var pushItems = Mp && rem.doc && !first ? P.changes(rem.doc, Mp, '\u0001') : [];
       var done = function (at) { if (part === 'main') S.rvPush = false; else S.mpPush = false; if (pushItems.length) pushSend(pushItems); SY.et[part] = at; SY.dm[part] = false; SY.last = Date.now(); SY.err = ''; sySave(); msgs.forEach(function (m) { bag.push(m); }); };
@@ -3474,7 +3475,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v66';
+  var BUILD = 'aic-paint-v67';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {

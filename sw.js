@@ -1,4 +1,4 @@
-const CACHE = 'aic-paint-v66';
+const CACHE = 'aic-paint-v67';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'maskable-512.png', 'apple-touch-icon.png', 'favicon-64.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.indexOf('aic-paint-') === 0 && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
