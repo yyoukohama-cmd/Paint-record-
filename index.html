@@ -1074,7 +1074,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       } catch (e) {}
       try { var pl = piList(), pt = 0, td = todayStr(); pl.forEach(function (r) { if (r.pi.date === td) pt += r.pi.l; }); if ($('hm-pi')) $('hm-pi').textContent = pl.length ? piL(pt) + ' L issued today \u00b7 ' + pl.length + ' recorded' : 'Record what the store issued'; } catch (e) {}
       try { var sd = sumData(); if ($('hm-sum')) $('hm-sum').textContent = sd ? f1(sd.tot.all) + ' t in bays \u00b7 ' + f1(sd.rel) + ' t released' : 'Import the log sheet to see it'; } catch (e) {}
-      var pend = 0; try { if (myAdmin()) pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'pi' && r.kind !== 'pc' && !AP_K.test(r.kind); }).length; } catch (e) {} try { renderAp(); } catch (e) {}
+      var pend = 0; try { if (myAdmin()) pend = ST.reports.filter(function (r) { return r.st === 'pending' && r.kind !== 'ho' && r.kind !== 'pi' && r.kind !== 'pc' && !AP_K.test(r.kind); }).length; } catch (e) {} try { renderAp(); } catch (e) {}
       ['hm-bd', 'nd-bd'].forEach(function (id) { var el = $(id); if (el) { el.hidden = !pend; el.textContent = pend || ''; } });
       
     } catch (e) {}
