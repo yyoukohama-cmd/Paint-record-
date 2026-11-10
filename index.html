@@ -1134,7 +1134,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       if (!conf.length) { toast('Confirm at least one step first.'); return; }
       var fin = function () {
         var tasks = conf.map(function (t) { var c = clone(t); delete c.cf; delete c._h; return c; });
-        S.ho = { id: 'h' + Date.now().toString(36), date: rv.ho.date, shift: rv.ho.shift, from: rv.ho.from || rv.by, to: rv.ho.to || '', tasks: tasks }; saveHo();
+        S.ho = { id: 'h' + Date.now().toString(36), date: rv.ho.date, shift: rv.ho.shift, from: rv.ho.from || rv.by, to: rv.ho.to || '', tasks: tasks }; S.rvPush = true; saveHo();
         var r = repById(rv.rid); if (r) { var rj = rv.ho.tasks.filter(function (t) { return t.cf !== 'yes'; }); r.st = 'published'; r.dec = realName() || 'Supervisor'; r.nrej = rj.length; r.rej = rj.slice(0, 6).map(taskLabel); r.u = Date.now(); stMeta(); }
         S.rv = null; saveRv(); location.hash = 'handover'; showTab('handover'); renderHo(); renderReports(); syNow(true); toast('Final handover created and shared with the team.');
       };
@@ -1151,7 +1151,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     else if (act === 'ho-paint') { lsSet('aic-hopaint', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'ho-items') { lsSet('aic-hoitems', b.checked ? '1' : '0'); renderHo(); }
     else if (act === 'del-x') { var rx = findRow(id); if (rx) { rx.extras.splice(+b.getAttribute('data-xi'), 1); saveShift(); renderShift(); } }
-    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = S.canEdit ? hoPend().filter(function (r) { return lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); if (pend0.length) { var nw0 = Date.now(); pend0.forEach(function (r) { r.st = 'published'; r.dec = realName(); r.sup = 1; r.nrej = 0; r.u = nw0; }); stMeta(); } if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast('Handover created' + (cr ? ' (' + cr + ' carried over)' : '') + '.'); }; if (S.canEdit) askYes('Create the handover and share it with the team?' + (pend0.length ? ' ' + pend0.length + ' handover' + (pend0.length > 1 ? 's' : '') + ' waiting for review (' + pend0.map(function (r) { return r.by; }).join(', ') + ') will be closed.' : ''), doMake, 'Create handover'); else doMake(); }
+    else if (act === 'make-ho') { if (!S.shift) return; var sel0 = S.shift.hoBays || []; if (!sel0.length) { toast('Select at least one bay.'); return; } var pend0 = S.canEdit ? hoPend().filter(function (r) { return lc(r.by) !== lc(realName()); }) : [], doMake = function () { var cr = buildHandover(); if (pend0.length) { var nw0 = Date.now(); pend0.forEach(function (r) { r.st = 'published'; r.dec = realName(); r.sup = 1; r.nrej = 0; r.u = nw0; }); stMeta(); } if (hoSkip) toast(hoSkip + ' line' + (hoSkip > 1 ? 's' : '') + ' skipped: no step marked done in the log sheet.'); location.hash = 'handover'; showTab('handover'); toast('Handover created' + (cr ? ' (' + cr + ' carried over)' : '') + '.'); if (!S.canEdit && S.role && S.ho && S.ho.tasks.length) setTimeout(function () { var sb = document.querySelector('[data-act=ho-submit]'); if (sb) sb.click(); }, 400); }; if (S.canEdit) askYes('Create the handover and share it with the team?' + (pend0.length ? ' ' + pend0.length + ' handover' + (pend0.length > 1 ? 's' : '') + ' waiting for review (' + pend0.map(function (r) { return r.by; }).join(', ') + ') will be closed.' : ''), doMake, 'Create handover'); else doMake(); }
     else if (act === 'print-ho') printHo();
     else if (act === 'share-ho') shareHo();
     else if (act === 'clear-shift') { askYes('Clear the imported log sheet and all its statuses?', function () { S.shift = null; saveShift(); renderShift(); }, 'Clear log sheet'); }
@@ -2566,10 +2566,11 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       if (rem.same) return;
       var first = SY.et[part] == null, L = P.local(), M = P.merge(L, rem.doc), msgs = rem.doc && !first ? P.changes(L, M) : [];
       if (P.sig(L) !== P.sig(M)) P.apply(M);
-      var shr = sharing() || (part === 'meta' && canPaint()) || (canReview() && S.role !== 'owner' && !S.canEdit); var Mp = shr ? M : P.limit(rem.doc, M);
+      /* log sheet marks and handovers (main) reach the team only from supervisors, or once when a reviewer issues a final handover; foremen send theirs through Submit for review */
+      var shr = part === 'main' ? (sharing() || !!S.rvPush) : (sharing() || canPaint() || (canReview() && S.role !== 'owner' && !S.canEdit)); var Mp = shr ? M : P.limit(rem.doc, M);
       var need = !Mp ? false : (!rem.doc ? (shr || (Mp.reports || []).length > 0) : P.sig(Mp) !== P.sig(rem.doc));
       var pushItems = Mp && rem.doc && !first ? P.changes(rem.doc, Mp, '\u0001') : [];
-      var done = function (at) { if (pushItems.length) pushSend(pushItems); SY.et[part] = at; SY.dm[part] = false; SY.last = Date.now(); SY.err = ''; sySave(); msgs.forEach(function (m) { bag.push(m); }); };
+      var done = function (at) { if (part === 'main') S.rvPush = false; if (pushItems.length) pushSend(pushItems); SY.et[part] = at; SY.dm[part] = false; SY.last = Date.now(); SY.err = ''; sySave(); msgs.forEach(function (m) { bag.push(m); }); };
       if (!need) { done(rem.at); return; }
       var at = Date.now(), h = { 'Content-Type': 'application/json' }; if (rem.tag) h['if-match'] = rem.tag;
       return fetch(syUrl('/' + part), { method: 'PUT', headers: h, body: JSON.stringify({ at: at, by: syName(), d: JSON.stringify(Mp) }) }).then(function (p) {
