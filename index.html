@@ -113,6 +113,7 @@ svg { display: block; }
 
 /* page */
 .page { position: relative; max-width: 1120px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+body.notitle .titlerow{display:none!important}
 .titlerow { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; position: relative; }
 .crumb { font-size: .72rem; letter-spacing: .12em; color: var(--muted); font-weight: 600; }
 .crumb b { color: var(--accent); margin: 0 4px; }
@@ -397,7 +398,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
  body.print-ho .card{box-shadow:none;margin:0 0 4px;padding:6px 8px}
  body.print-ho #tab-handover{gap:4px}
 }
-.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}.apdet{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.04));font-size:.88rem}.apd1{padding:2px 0}.apd1 span{color:var(--muted)}.qscr{position:fixed;right:14px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:19;display:flex;flex-direction:column;gap:8px}.qscr button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 6px 18px -6px rgba(20,30,50,.45);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.92}.qscr button[hidden]{display:none}@media print{.qscr{display:none}}.calcp{background:var(--surface,#fff);color:var(--ink,#111);border-radius:18px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.cin{display:flex;align-items:center;gap:6px}.cin input{flex:1;min-width:0}.cin span{color:var(--muted);font-size:.9rem;min-width:24px}.cchips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.cchips .chipb{min-height:34px;padding:5px 12px}.cres{margin-top:12px;padding:14px;border-radius:14px;background:var(--bg2,rgba(196,15,60,.06));text-align:center}.cres b{display:block;font-size:2.4rem;line-height:1.1;margin-top:4px}.cres b small{font-size:1rem;color:var(--muted)}.cres .fine{text-align:center}.cdet{margin-top:10px}.cdet div{display:flex;justify-content:space-between;padding:6px 2px;border-top:1px solid var(--line);font-size:.92rem}.cdet span{color:var(--muted)}.hline.rvl .hctl{flex-direction:column;align-items:stretch;gap:8px;width:100%}.hline.rvl .seg{display:flex;width:100%}.hline.rvl .seg button{flex:1;padding:9px 6px}.hoseg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 12px;background:var(--surface)}.hoseg button{flex:1;padding:11px 6px;border:0;background:transparent;color:var(--muted);font:600 .9rem Inter,sans-serif;cursor:pointer}.hoseg button[aria-pressed=true]{background:var(--accent);color:#fff}.hoseg em{font-style:normal;display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:#c40f3c;color:#fff;font-size:.78rem}.hdban{margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF4D6;color:#7A5200;font-size:.9rem}.hdban.bad{background:#FDE7EA;color:#9B1029}.hdrow{padding:10px 0;border-top:1px solid var(--line)}.who{color:var(--muted)}.who b{color:var(--ink)}.rvback{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--accent);font:600 .95rem Inter,sans-serif;padding:4px 2px 10px;cursor:pointer}.rvh{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px}.rvwho{display:flex;gap:10px;align-items:center}.rvwho b{display:block}.rvwho small{color:var(--muted)}.av{width:40px;height:40px;border-radius:50%;background:#E8EEF8;color:#1F4E8C;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none}.rvst{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.rvst span{font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--bg2,#f1f3f6);color:var(--muted);font-weight:600}.rvst .ok{background:#E3F4EA;color:#17663A}.rvst .bad{background:#FDE7EA;color:#9B1029}.rvbay{padding-bottom:4px}.rvstep{border-top:1px solid var(--line);padding:10px 2px}.rvstep.y{background:linear-gradient(90deg,#E3F4EA 0,transparent 60%)}.rvstep.n{background:linear-gradient(90deg,#FDE7EA 0,transparent 60%)}.rvt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.rvt b{font-size:1.02rem}.rvt>span:not(.mk){font-weight:600;color:var(--ink)}.mk{font-size:.75rem;padding:2px 8px;border-radius:999px;font-weight:700}.mk.y{background:#E3F4EA;color:#17663A}.mk.n{background:#FDE7EA;color:#9B1029}.mk.u{background:#f1f3f6;color:#6b7480}.rvm{color:var(--muted);font-size:.85rem;margin-top:3px}.rvd{margin-top:3px}.dec{font-size:.8rem;font-weight:700}.dec.y{color:#17663A}.dec.n{color:#9B1029}.rva{display:flex;gap:6px;margin-top:8px}.rva button{flex:1;min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:600 .85rem Inter,sans-serif;cursor:pointer}.rva button.y[aria-pressed=true]{background:#1A8F4C;border-color:#1A8F4C;color:#fff}.rva button.n[aria-pressed=true]{background:#C40F3C;border-color:#C40F3C;color:#fff}.rvfb{display:flex;flex-direction:column;gap:8px;margin-top:10px}.rvfb .btn.primary{width:100%}.rvfs{display:flex;gap:8px}.rvfs .btn{flex:1}.hdlist{padding:6px 0}.hdlh{display:flex;align-items:center;gap:8px;padding:8px 16px}.hdlh h2{margin:0;font-size:1.05rem;flex:1}.hdp{border-top:1px solid var(--line)}.hdph{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer}.hdpt{flex:1;min-width:0}.hdpt b{display:block}.hdpt small{color:var(--muted)}.hdtm{color:var(--muted);font-size:.8rem}.hdp .dot{width:8px;height:8px;border-radius:50%;background:#C40F3C}.chev{color:var(--muted)}.hdpb{padding:0 16px 10px 66px}.hdho{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed var(--line)}.hdhoi{flex:1}.hdhoi b{display:block;font-size:.92rem}.hdhoi small{color:var(--muted)}.apn2{padding:6px 0}.apn2 .aph{padding:6px 16px}.apnr{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer}.apnr:active{background:var(--bg2,#f1f3f6)}.apnt{flex:1;min-width:0}.apnt b{display:block}.apnt small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.apnr .chev{font-size:1.4rem;color:var(--muted)}.hdst{display:inline-block;margin-top:4px;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px}.hdst.y{background:#E3F4EA;color:#17663A}.hdst.n{background:#FDE7EA;color:#9B1029}.pmk{margin-top:4px;font-size:.82rem;padding:4px 8px;border-radius:8px;background:#FFF4D6;color:#7A5200}.hmbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.hmbar>div{flex:1;min-width:180px}.hmbar b{display:block}.hmbar small{color:var(--muted)}.hdst.w{background:#FFF4D6;color:#7A5200}.hdst.p{background:#FFF0E0;color:#8A4B00}.prq{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;cursor:pointer}.prq span{flex:1}.prq b{display:block;font-size:1.05rem}.prq small{color:var(--muted)}.prq em{font-style:normal;font-weight:600;color:var(--accent);font-size:.9rem}.prq[aria-expanded=true]{margin-bottom:10px}#pndbox .ndcard{margin-bottom:12px}</style>
+.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}.apdet{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.04));font-size:.88rem}.apd1{padding:2px 0}.apd1 span{color:var(--muted)}.qscr{position:fixed;right:14px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:19;display:flex;flex-direction:column;gap:8px}.qscr button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 6px 18px -6px rgba(20,30,50,.45);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.92}.qscr button[hidden]{display:none}@media print{.qscr{display:none}}.calcp{background:var(--surface,#fff);color:var(--ink,#111);border-radius:18px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.cin{display:flex;align-items:center;gap:6px}.cin input{flex:1;min-width:0}.cin span{color:var(--muted);font-size:.9rem;min-width:24px}.cchips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.cchips .chipb{min-height:34px;padding:5px 12px}.cres{margin-top:12px;padding:14px;border-radius:14px;background:var(--bg2,rgba(196,15,60,.06));text-align:center}.cres b{display:block;font-size:2.4rem;line-height:1.1;margin-top:4px}.cres b small{font-size:1rem;color:var(--muted)}.cres .fine{text-align:center}.cdet{margin-top:10px}.cdet div{display:flex;justify-content:space-between;padding:6px 2px;border-top:1px solid var(--line);font-size:.92rem}.cdet span{color:var(--muted)}.hline.rvl .hctl{flex-direction:column;align-items:stretch;gap:8px;width:100%}.hline.rvl .seg{display:flex;width:100%}.hline.rvl .seg button{flex:1;padding:9px 6px}.hoseg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 12px;background:var(--surface)}.hoseg button{flex:1;padding:11px 6px;border:0;background:transparent;color:var(--muted);font:600 .9rem Inter,sans-serif;cursor:pointer}.hoseg button[aria-pressed=true]{background:var(--accent);color:#fff}.hoseg em{font-style:normal;display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:#c40f3c;color:#fff;font-size:.78rem}.hdban{margin:8px 0;padding:10px 12px;border-radius:10px;background:#FFF4D6;color:#7A5200;font-size:.9rem}.hdban.bad{background:#FDE7EA;color:#9B1029}.hdrow{padding:10px 0;border-top:1px solid var(--line)}.who{color:var(--muted)}.who b{color:var(--ink)}.rvback{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--accent);font:600 .95rem Inter,sans-serif;padding:4px 2px 10px;cursor:pointer}.rvh{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px}.rvwho{display:flex;gap:10px;align-items:center}.rvwho b{display:block}.rvwho small{color:var(--muted)}.av{width:40px;height:40px;border-radius:50%;background:#E8EEF8;color:#1F4E8C;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none}.rvst{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.rvst span{font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--bg2,#f1f3f6);color:var(--muted);font-weight:600}.rvst .ok{background:#E3F4EA;color:#17663A}.rvst .bad{background:#FDE7EA;color:#9B1029}.rvbay{padding-bottom:4px}.rvstep{border-top:1px solid var(--line);padding:10px 2px}.rvstep.y{background:linear-gradient(90deg,#E3F4EA 0,transparent 60%)}.rvstep.n{background:linear-gradient(90deg,#FDE7EA 0,transparent 60%)}.rvt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.rvt b{font-size:1.02rem}.rvt>span:not(.mk){font-weight:600;color:var(--ink)}.mk{font-size:.75rem;padding:2px 8px;border-radius:999px;font-weight:700}.mk.y{background:#E3F4EA;color:#17663A}.mk.n{background:#FDE7EA;color:#9B1029}.mk.u{background:#f1f3f6;color:#6b7480}.rvm{color:var(--muted);font-size:.85rem;margin-top:3px}.rvd{margin-top:3px}.dec{font-size:.8rem;font-weight:700}.dec.y{color:#17663A}.dec.n{color:#9B1029}.rva{display:flex;gap:6px;margin-top:8px}.rva button{flex:1;min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:600 .85rem Inter,sans-serif;cursor:pointer}.rva button.y[aria-pressed=true]{background:#1A8F4C;border-color:#1A8F4C;color:#fff}.rva button.n[aria-pressed=true]{background:#C40F3C;border-color:#C40F3C;color:#fff}.rvfb{display:flex;flex-direction:column;gap:8px;margin-top:10px}.rvfb .btn.primary{width:100%}.rvfs{display:flex;gap:8px}.rvfs .btn{flex:1}.hdlist{padding:6px 0}.hdlh{display:flex;align-items:center;gap:8px;padding:8px 16px}.hdlh h2{margin:0;font-size:1.05rem;flex:1}.hdp{border-top:1px solid var(--line)}.hdcnt{background:#C40F3C;color:#fff;border-radius:999px;padding:3px 10px;font-weight:700;font-size:.9rem;white-space:nowrap}.hdcnt small{font-weight:500;font-size:.75rem;opacity:.9}.hdsum{color:var(--muted);font-size:.85rem;padding:2px 0 8px}.hdbtns{display:flex;gap:6px;flex-shrink:0}.hdx{all:unset;cursor:pointer;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;color:var(--muted);font-size:1.2rem}.hdx:hover{background:var(--line)}.hdph{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer}.hdpt{flex:1;min-width:0}.hdpt b{display:block}.hdpt small{color:var(--muted)}.hdtm{color:var(--muted);font-size:.8rem}.hdp .dot{width:8px;height:8px;border-radius:50%;background:#C40F3C}.chev{color:var(--muted)}.hdpb{padding:0 16px 10px 66px}.hdho{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed var(--line)}.hdhoi{flex:1}.hdhoi b{display:block;font-size:.92rem}.hdhoi small{color:var(--muted)}.apn2{padding:6px 0}.apn2 .aph{padding:6px 16px}.apnr{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer}.apnr:active{background:var(--bg2,#f1f3f6)}.apnt{flex:1;min-width:0}.apnt b{display:block}.apnt small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.apnr .chev{font-size:1.4rem;color:var(--muted)}.hdst{display:inline-block;margin-top:4px;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px}.hdst.y{background:#E3F4EA;color:#17663A}.hdst.n{background:#FDE7EA;color:#9B1029}.pmk{margin-top:4px;font-size:.82rem;padding:4px 8px;border-radius:8px;background:#FFF4D6;color:#7A5200}.hmbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.hmbar>div{flex:1;min-width:180px}.hmbar b{display:block}.hmbar small{color:var(--muted)}.hdst.w{background:#FFF4D6;color:#7A5200}.hdst.p{background:#FFF0E0;color:#8A4B00}.prq{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;cursor:pointer}.prq span{flex:1}.prq b{display:block;font-size:1.05rem}.prq small{color:var(--muted)}.prq em{font-style:normal;font-weight:600;color:var(--accent);font-size:.9rem}.prq[aria-expanded=true]{margin-bottom:10px}#pndbox .ndcard{margin-bottom:12px}</style>
 </head>
 <body>
 <header class="top">
@@ -1046,7 +1047,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     
     var changed = S.tab !== t; S.tab = t; if (t !== 'projects') S.pRun = null;
     ['home', 'record', 'log', 'shift', 'handover', 'reports', 'projects'].forEach(function (k) { $('tab-' + k).hidden = k !== t; });
-    document.body.classList.toggle('on-home', t === 'home'); var rp0 = $('recpop'); if (rp0) rp0.hidden = true;
+    document.body.classList.toggle('on-home', t === 'home'); document.body.classList.toggle('notitle', t === 'shift' || t === 'handover' || t === 'reports' || t === 'projects'); var rp0 = $('recpop'); if (rp0) rp0.hidden = true;
     S.dockTab = t; markDock();
     fillHome();
     document.querySelectorAll('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
@@ -1301,6 +1302,15 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     S.projects.forEach(function (p) { var pw = String(p.wo).toLowerCase(); if (!hit && (pw === w || pw.indexOf(w + '-') === 0 || pw.replace(/-\d+$/, '') === w)) hit = p; });
     return hit;
   }
+  /* M = miscellaneous material of a project: it uses the paint data of the base project (Book7 lists it there) */
+  function isMwo(wo) { return /^(.*\d)\s*-?m$/i.test(String(wo || '').trim()); }
+  function baseWo(wo) { return String(wo || '').trim().replace(/\s*-?m$/i, ''); }
+  function projOf(wo) {
+    var p = matchProject(wo);
+    if (isMwo(wo) && (!p || !sysList(p).length)) { var b = matchProject(baseWo(wo)); if (b && (sysList(b).length || !p)) return { p: b, base: true }; }
+    return { p: p, base: false };
+  }
+  function sysKey(r) { return r.pid + '|' + r.treat + (isMwo(r.wo) ? '|M' : ''); }
   function stageList(sys) { var o = []; (sys.coats || []).forEach(function (c) { var k = canonStage(c.label); if (k && o.indexOf(k) < 0) o.push(k); }); return o; }
   function pickCoat(sys, stage, remark) {
     var cs = (sys.coats || []).filter(function (c) { return canonStage(c.label) === stage; });
@@ -1309,21 +1319,23 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     KEYS.forEach(function (k) { if (!best && rm.indexOf(k) > -1) best = cs.filter(function (c) { return String(c.label).toLowerCase().indexOf(k) > -1; })[0] || null; });
     return best || cs.filter(function (c) { return !/[·(]/.test(c.label); })[0] || cs[0];
   }
-  function pickSystem(p, treat) {
+  function pickSystem(p, treat, mwo) {
     var ss = sysList(p); if (!ss.length) return null;
-    var sv = S.sysmap[p._id + '|' + treat];
+    var sv = S.sysmap[p._id + '|' + treat + (mwo ? '|M' : '')];
     for (var i = 0; i < ss.length; i++) if (ss[i].id === sv) return ss[i];
     if (ss.length === 1) return ss[0];
     var T = String(treat || '').toUpperCase(), hit = null;
+    if (mwo) ss.forEach(function (s) { if (!hit && /misc/i.test(s.name)) hit = s; });
     ss.forEach(function (s) { if (!hit && String(s.name).toUpperCase().split(/[^A-Z0-9]+/).indexOf(T) > -1) hit = s; });
     if (!hit && /^G/.test(T)) ss.forEach(function (s) { if (!hit && /galva/i.test(s.name)) hit = s; });
     return hit || ss[0];
   }
   function rowSys(r) { var p = getP(r.pid), ss = sysList(p); for (var i = 0; i < ss.length; i++) if (ss[i].id === r.sid) return ss[i]; return null; }
   function fillRow(r) {
+    var po = projOf(r.wo); r.pid = po.p ? po.p._id : ''; r.note = po.base ? 'Miscellaneous material \u00b7 uses the paint data of project ' + po.p.wo + '.' : '';
     var p = getP(r.pid), sys = null; r.warn = ''; r.sid = ''; r.pl = []; r.coat = ''; r.paint = ''; r.code = ''; r.color = ''; r.dft = 0; r.pack = 0; r.litres = 0;
     if (!p) { r.warn = 'Project ' + r.wo + ' is not in the project list.'; return; }
-    sys = pickSystem(p, r.treat);
+    sys = pickSystem(p, r.treat, isMwo(r.wo));
     if (!sys) { r.warn = 'No paint data for ' + p.wo + ' yet.'; return; }
     r.sid = sys.id;
     var st = steps(r), plan = Math.max(1, Math.min(r.done || 0, st.length || 1)), bad = [];
@@ -1345,7 +1357,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     items.forEach(function (it) {
       var one = it.stage === 'Top Coat' && /one\s*side/i.test(it.remark || '');
       var key = [it.bay, it.wo, it.treat, it.stage, one ? 1 : 0].join('|'), r = map[key];
-      if (!r) { var p = matchProject(it.wo), fb = false; if (!p && /m$/i.test(it.wo)) { p = matchProject(it.wo.slice(0, -1)); fb = !!p; } r = map[key] = { note: fb ? 'Using the paint data of project ' + p.wo + ' (no separate ' + it.wo + ' project).' : '', id: key, bay: it.bay, wo: it.wo, treat: it.treat, stage: it.stage, oneSide: one, pid: p ? p._id : '', area: 0, qty: 0, wt: 0, items: [], remarks: '', status: 'pending', extras: [] }; order.push(r); }
+      if (!r) { var po = projOf(it.wo), p = po.p; r = map[key] = { note: '', id: key, bay: it.bay, wo: it.wo, treat: it.treat, stage: it.stage, oneSide: one, pid: p ? p._id : '', area: 0, qty: 0, wt: 0, items: [], remarks: '', status: 'pending', extras: [] }; order.push(r); }
       r.area += it.sa; r.qty += it.qty; r.wt += it.wt;
       r.items.push({ str: it.str, batch: it.batch, qty: it.qty, wt: it.wt, sa: it.sa, loc: it.loc });
       if (it.remark && r.remarks.indexOf(it.remark) < 0) r.remarks += (r.remarks ? '; ' : '') + it.remark;
@@ -1622,6 +1634,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var d = S.hd, r = d && d.sub ? repById(d.sub) : null, who = apWho(realName());
     if (!r) return '<div class="hdban">Draft · not sent yet. Submit it for review; until it is approved it is not the final handover and nobody else sees it.</div>';
     if (r.st === 'pending') return '<div class="hdban">Draft · waiting for approval by ' + esc(naOf(realName()) ? who : 'a supervisor') + '. Nobody else sees it until it is approved.' + ((r.sr || []).length ? '<br><b>Rejected so far:</b> ' + esc(r.sr.map(function (x) { return x.l + (x.n ? ' (' + x.n + ')' : '') + ' by ' + x.by; }).join('; ')) : '') + '</div>';
+    if (r.st === 'removed' && r.delby) return '<div class="hdban bad">Deleted by ' + esc(pn(r.delby)) + '. Fix the draft and submit it again, or delete it.</div>';
     if (r.st === 'dismissed') return '<div class="hdban bad">Rejected by ' + esc(pn(r.dec || '')) + '. Fix the draft and submit it again.</div>';
     return '';
   }
@@ -1632,18 +1645,19 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       S.hdOpen = S.hdOpen || {};
       h += '<div class="card hdlist"><div class="hdlh"><h2>Waiting for your review</h2><span class="apn">' + L.length + '</span></div>' + GO.map(function (k) {
         var g = G[k], last = g.list[0], steps = 0, bays = {}; g.list.forEach(function (r) { (r.ho.tasks || []).forEach(function (t) { steps++; bays[t.bay] = 1; }); });
-        var open = S.hdOpen[k] || GO.length === 1;
-        return '<div class="hdp' + (open ? ' open' : '') + '"><button type="button" class="hdph" data-act="hd-grp" data-id="' + esc(k) + '"><span class="av">' + esc(initials(g.by)) + '</span><span class="hdpt"><b>' + esc(pn(g.by)) + '</b><small>' + g.list.length + ' handover' + (g.list.length > 1 ? 's' : '') + ' · ' + steps + ' steps · ' + esc(Object.keys(bays).sort(function (a, b) { return bayNo(a) - bayNo(b); }).join(', ')) + '</small></span><span class="hdtm">' + ago(last.ts) + '</span><i class="dot"></i><span class="chev">' + (open ? '▴' : '▾') + '</span></button>' +
-          (open ? '<div class="hdpb">' + g.list.map(function (r) {
+        var open = !!S.hdOpen[k];
+        return '<div class="hdp' + (open ? ' open' : '') + '"><button type="button" class="hdph" data-act="hd-grp" data-id="' + esc(k) + '" aria-expanded="' + open + '"><span class="av">' + esc(initials(g.by)) + '</span><span class="hdpt"><b>' + esc(pn(g.by)) + '</b></span><span class="hdcnt" title="Tasks waiting for review">' + steps + '<small> task' + (steps === 1 ? '' : 's') + '</small></span><span class="chev">' + (open ? '▴' : '▾') + '</span></button>' +
+          (open ? '<div class="hdpb"><div class="hdsum">' + g.list.length + ' handover' + (g.list.length > 1 ? 's' : '') + ' · ' + esc(Object.keys(bays).sort(function (a, b) { return bayNo(a) - bayNo(b); }).join(', ')) + ' · last sent ' + ago(last.ts) + '</div>' + g.list.map(function (r) {
             var T = r.ho.tasks || [], dn = T.filter(function (t) { return t.status === 'yes'; }).length, nd = T.filter(function (t) { return t.status === 'no'; }).length;
-            return '<div class="hdho"><div class="hdhoi"><b>' + esc((r.hm ? 'Marks on final · ' : '') + (r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift') + '</b><small>' + T.length + ' steps · ' + dn + ' done · ' + nd + ' not done · sent ' + fmtT(r.ts) + ((r.sr || []).length ? ' · ' + r.sr.length + ' rejected' : '') + '</small></div><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div>';
+            return '<div class="hdho"><div class="hdhoi"><b>' + esc((r.hm ? 'Marks on final · ' : '') + (r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift') + '</b><small>' + T.length + ' steps · ' + dn + ' done · ' + nd + ' not done · sent ' + fmtT(r.ts) + ((r.sr || []).length ? ' · ' + r.sr.length + ' rejected' : '') + '</small></div><div class="hdbtns"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button><button class="btn sm danger" data-act="hdr-del" data-id="' + esc(r.id) + '" aria-label="Delete this handover">Delete</button></div></div>';
           }).join('') + '</div>' : '') + '</div>';
       }).join('') + '</div>';
     }
-    var D = S.role ? ST.reports.filter(function (r) { return r.kind === 'ho' && (r.st === 'published' || r.st === 'dismissed') && r.dec && (r.u || 0) > Date.now() - 2 * 864e5 && (canReview() || canApproveFor(r.by) || lc(r.dec) === lc(realName())) && lc(r.by) !== lc(realName()); }).sort(function (a, b) { return (b.u || 0) - (a.u || 0); }).slice(0, 12) : [];
+    var HID = hdHidden();
+    var D = S.role ? ST.reports.filter(function (r) { return !HID[r.id] && r.kind === 'ho' && (r.st === 'published' || r.st === 'dismissed') && r.dec && (r.u || 0) > Date.now() - 2 * 864e5 && (canReview() || canApproveFor(r.by) || lc(r.dec) === lc(realName())) && lc(r.by) !== lc(realName()); }).sort(function (a, b) { return (b.u || 0) - (a.u || 0); }).slice(0, 12) : [];
     if (D.length) h += '<div class="card hdlist"><div class="hdlh"><h2>Reviewed</h2></div>' + D.map(function (r) {
       var ok = r.st === 'published', T = (r.ho && r.ho.tasks) || [];
-      return '<div class="hdp"><div class="hdph" style="cursor:default"><span class="av">' + esc(initials(r.by)) + '</span><span class="hdpt"><b>' + esc(pn(r.by)) + '</b><small>' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · ' + T.length + ' steps') + '</small><span class="hdst ' + (ok ? 'y' : 'n') + '">' + (ok ? '✓ Approved by ' + esc(pn(r.dec)) + (r.sup ? ' (handover replaced)' : ' · in final handover') + (r.nrej ? ' · ' + r.nrej + ' step' + (r.nrej > 1 ? 's' : '') + ' left out' : '') : '✗ Rejected by ' + esc(pn(r.dec))) + '</span></span><span class="hdtm">' + ago(r.u) + '</span></div></div>';
+      return '<div class="hdp"><div class="hdph" style="cursor:default"><span class="av">' + esc(initials(r.by)) + '</span><span class="hdpt"><b>' + esc(pn(r.by)) + '</b><small>' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · ' + T.length + ' steps') + '</small><span class="hdst ' + (ok ? 'y' : 'n') + '">' + (ok ? '✓ Approved by ' + esc(pn(r.dec)) + (r.sup ? ' (handover replaced)' : ' · in final handover') + (r.nrej ? ' · ' + r.nrej + ' step' + (r.nrej > 1 ? 's' : '') + ' left out' : '') : '✗ Rejected by ' + esc(pn(r.dec))) + '</span></span><span class="hdtm">' + ago(r.u) + '</span><button type="button" class="hdx" data-act="hdh-hide" data-id="' + esc(r.id) + '" aria-label="Remove from this list">×</button></div></div>';
     }).join('') + '</div>';
     if (!hoShares()) h += mySubsHtml();
     if (!hoShares()) {
@@ -1661,7 +1675,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
               '<input class="hnote" data-hdnote="' + id + '" type="text" value="' + esc(t.note || '') + '" placeholder="Note" aria-label="Note"></div><div class="hctl"><div class="seg" role="group" aria-label="Status"><button type="button" class="rel" data-act="hd-set" data-id="' + id + '" data-st="yes" aria-pressed="' + (t.status === 'yes') + '">Done</button><button type="button" class="no" data-act="hd-set" data-id="' + id + '" data-st="no" aria-pressed="' + (t.status === 'no') + '">Not done</button><button type="button" data-act="hd-delstep" data-id="' + id + '">Remove</button></div></div></div>';
           }).join('') + '</div></div>';
         });
-        h += '<div class="card dock noprint"><div class="dockrow"><button class="btn primary" data-act="hd-submit">' + (pend ? 'Send again' : 'Submit for review') + '</button><button class="btn danger" data-act="hd-del">Delete draft</button></div><p class="fine" style="margin:8px 2px 0">Export, WhatsApp and Print are on the final handover only.</p></div>';
+        h += '<div class="card dock noprint"><div class="dockrow"><button class="btn primary" data-act="hd-submit">' + (d.sub ? 'Send again' : 'Submit for review') + '</button><button class="btn danger" data-act="hd-del">Delete draft</button></div><p class="fine" style="margin:8px 2px 0">Export, WhatsApp and Print are on the final handover only.</p></div>';
       }
     }
     if (!h) h = '<div class="card"><div class="empty" style="display:block">No handover drafts.</div></div>';
@@ -1681,7 +1695,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       if (!S.role) { toast('Sign in first (Settings).'); return; } if (!S.hd.tasks.length) { toast('The draft has no steps.'); return; }
       var um = S.hd.tasks.filter(function (t) { return !t.status; }).length;
       askYes((um ? um + ' step' + (um > 1 ? 's are' : ' is') + ' not marked yet.\n' : '') + 'Send this handover draft for review?', function () {
-        var now = Date.now(), me = realName(); ST.reports.forEach(function (r) { if (r.kind === 'ho' && r.st === 'pending' && lc(r.by) === lc(me)) { r.st = 'removed'; r.u = now; } });
+        var now = Date.now(), me = realName(); ST.reports.forEach(function (r) { if (r.kind === 'ho' && !r.hm && r.st === 'pending' && lc(r.by) === lc(me)) { r.st = 'removed'; r.u = now; } });
+        var old = S.hd.sub ? repById(S.hd.sub) : null; if (old && old.st !== 'published') { if (old.st !== 'removed') { old.st = 'removed'; old.u = now; } hdHide(old.id); }
         var c = clone(S.hd); delete c.sub; delete c.draft; c.tasks.forEach(function (t) { delete t._h; });
         var rid = 'p' + syRid(); ST.reports.unshift({ id: rid, ts: now, by: me, st: 'pending', kind: 'ho', pub: false, notify: false, dec: '', u: now, text: 'Handover ' + S.hd.date + ' · ' + S.hd.shift, ho: c });
         S.hd.sub = rid; saveHd(); stMeta(); renderHo(); fillHome(); toast(SY.on ? 'Sent for review.' : 'Saved. Connect Sync so it reaches the reviewer.');
@@ -1715,17 +1730,18 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   /* the sender sees every submission and what happened to each step */
   function mySubsHtml() {
     var me = lc(realName()); if (!me) return '';
-    var L = ST.reports.filter(function (r) { return r.kind === 'ho' && lc(r.by) === me && r.st !== 'removed' && (r.st === 'pending' || (r.u || 0) > Date.now() - 2 * 864e5); }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 10);
+    var HID = hdHidden();
+    var L = ST.reports.filter(function (r) { return r.kind === 'ho' && !HID[r.id] && lc(r.by) === me && (r.st !== 'removed' || (r.delby && lc(r.delby) !== me)) && (r.st === 'pending' || (r.u || 0) > Date.now() - 2 * 864e5); }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 10);
     if (!L.length) return '';
     S.subOpen = S.subOpen || {};
     return '<div class="card hdlist"><div class="hdlh"><h2>Your submissions</h2></div>' + L.map(function (r) {
       var T = (r.ho && r.ho.tasks) || [], res = r.res || [], ok = res.filter(function (x) { return x.cf === 'yes'; }).length, no = res.filter(function (x) { return x.cf === 'no'; }).length;
-      var chip = r.st === 'pending' ? '<span class="hdst w">Waiting for approval</span>' : r.st === 'dismissed' ? '<span class="hdst n">✗ Rejected by ' + esc(pn(r.dec)) + '</span>' : no ? '<span class="hdst p">Partly approved by ' + esc(pn(r.dec)) + ' · ' + ok + ' ✓ ' + no + ' ✗</span>' : '<span class="hdst y">✓ Approved by ' + esc(pn(r.dec)) + '</span>';
+      var chip = r.st === 'removed' ? '<span class="hdst n">Deleted by ' + esc(pn(r.delby)) + '</span>' : r.st === 'pending' ? '<span class="hdst w">Waiting for approval</span>' : r.st === 'dismissed' ? '<span class="hdst n">✗ Rejected by ' + esc(pn(r.dec)) + '</span>' : no ? '<span class="hdst p">Partly approved by ' + esc(pn(r.dec)) + ' · ' + ok + ' ✓ ' + no + ' ✗</span>' : '<span class="hdst y">✓ Approved by ' + esc(pn(r.dec)) + '</span>';
       var open = S.subOpen[r.id], list = '';
       if (open) {
         var src = res.length ? res : T.map(function (t) { return { bay: t.bay, wo: t.wo, step: t.step, st: t.status, note: t.note, cf: '' }; });
         var pend = {}; (r.sr || []).forEach(function (x) { pend[x.l] = x; });
-        list = '<div class="hdpb" style="padding-left:16px">' + src.map(function (x) {
+        list = '<div class="hdpb" style="padding-left:16px"><div class="hdsum hdbtns">' + (r.st !== 'published' ? '<button type="button" class="btn sm primary" data-act="sub-edit" data-id="' + esc(r.id) + '">Edit and send again</button>' : '') + '<button type="button" class="btn sm danger" data-act="sub-del" data-id="' + esc(r.id) + '">' + (r.st === 'pending' ? 'Withdraw and delete' : 'Delete from this list') + '</button></div>' + src.map(function (x) {
           var rj = !res.length && pend[[x.bay, x.wo].join(' · ') + ' · ' + (x.step || '')];
           var out = x.cf === 'yes' ? '<span class="mk y">✓ Approved' + (x.ed ? ' · corrected' : '') + '</span>' : x.cf === 'no' ? '<span class="mk n">✗ Rejected</span>' : '<span class="mk u">Waiting</span>';
           return '<div class="hdho"><div class="hdhoi"><b>' + esc(x.bay + ' · ' + x.wo + ' · ' + (x.step || '')) + '</b><small>You marked: ' + (x.st === 'yes' ? 'Done' : x.st === 'no' ? 'Not done' : 'not marked') + (x.note ? ' · “' + esc(x.note) + '”' : '') + (x.was ? ' · changed from ' + esc(x.was) : '') + '</small></div>' + out + '</div>';
@@ -1734,6 +1750,31 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       return '<div class="hdp' + (open ? ' open' : '') + '"><button type="button" class="hdph" data-act="sub-open" data-id="' + esc(r.id) + '"><span class="hdpt"><b>' + esc((r.hm ? 'Marks on final · ' : 'Handover · ') + (r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift') + '</b><small>' + T.length + ' steps · sent ' + fmtT(r.ts) + '</small>' + chip + '</span><span class="chev">' + (open ? '▴' : '▾') + '</span></button>' + list + '</div>';
     }).join('') + '</div>';
   }
+  function hdHidden() { try { return JSON.parse(lsGet('aic-hdhide') || '{}') || {}; } catch (e) { return {}; } }
+  function hdHide(id) { var m = hdHidden(), now = Date.now(); m[id] = now; Object.keys(m).forEach(function (k) { if (now - m[k] > 30 * 864e5) delete m[k]; }); lsSet('aic-hdhide', JSON.stringify(m)); }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-act="hdr-del"],[data-act="hdh-hide"],[data-act="sub-del"],[data-act="sub-edit"]') : null; if (!b) return; e.stopPropagation();
+    var a = b.getAttribute('data-act'), id = b.getAttribute('data-id'), r = repById(id), me = realName() || 'Supervisor'; if (!r) return;
+    if (a === 'hdh-hide') { hdHide(id); renderHo(); return; }
+    if (a === 'hdr-del') {
+      if (!rvItemOk(r)) { toast('You cannot review this handover.'); return; }
+      askYes('Delete the handover of ' + pn(r.by) + ' (' + ((r.ho && r.ho.tasks) || []).length + ' tasks)?\nIt will not go to the final handover. ' + r.by + ' is told it was deleted.', function () {
+        r.st = 'removed'; r.dec = me; r.delby = me; r.u = Date.now(); if (S.rv && S.rv.rid === id) { S.rv = null; saveRv(); }
+        stMeta(); renderHo(); fillHome(); toast('Handover deleted.');
+      }, 'Delete');
+      return;
+    }
+    if (a === 'sub-edit') {
+      if (lc(r.by) !== lc(me) || r.st === 'published') return;
+      var load = function () { S.hd = clone(r.ho); S.hd.sub = id; S.hd.from = S.hd.from || r.by; (S.hd.tasks || []).forEach(function (t) { delete t.cf; delete t.cfby; }); saveHd(); S.hoView = 'drafts'; renderHo(); setTimeout(function () { var x = document.querySelector('[data-act="hd-submit"]'); var c = x && x.closest('.card'); var f = document.getElementById('hd-shift'); try { (f ? f.closest('.card') : c).scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (er) {} }, 60); toast('Edit the handover, then tap Send again. The old one is deleted when you send.'); };
+      if (S.hd && S.hd.tasks && S.hd.tasks.length && S.hd.sub !== id) askYes('Replace your current draft with this handover?', load, 'Replace'); else load();
+      return;
+    }
+    if (a === 'sub-del') {
+      if (r.st === 'pending') askYes('Withdraw this handover from review and delete it?', function () { r.st = 'removed'; r.u = Date.now(); if (S.hd && S.hd.sub === id) { delete S.hd.sub; saveHd(); } stMeta(); renderHo(); fillHome(); toast('Withdrawn.'); }, 'Withdraw');
+      else { hdHide(id); renderHo(); }
+    }
+  }, true);
   document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-act="sub-open"]') : null; if (!b) return; S.subOpen = S.subOpen || {}; var id = b.getAttribute('data-id'); S.subOpen[id] = !S.subOpen[id]; renderHo(); });
   function rvHtml() {
     var rv = S.rv, ho = rv.ho, bays = {}, order = [], T = ho.tasks;
@@ -1898,9 +1939,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     });
     Object.keys(day).forEach(function (wo) { proj(wo).day += day[wo]; relDay += day[wo]; });
     po.forEach(function (wo) {
-      var q = pj[wo], p = matchProject(wo), b = null;
-      if (!p && /m$/i.test(wo)) { b = matchProject(wo.slice(0, -1)); }
-      if (p) q.state = sysList(p).length ? 'ok' : 'empty'; else if (b) { q.state = sysList(b).length ? 'uses' : 'empty'; q.base = b.wo; } else q.state = 'missing';
+      var q = pj[wo], po = projOf(wo), p = po.p;
+      if (!p) q.state = 'missing'; else if (!sysList(p).length) q.state = 'empty'; else if (po.base) { q.state = 'uses'; q.base = p.wo; } else q.state = 'ok';
     });
     bo.sort(function (a, b) { return bayNo(a) - bayNo(b); });
     var list = po.slice().sort(function (a, b) { return pj[b].t.all - pj[a].t.all || byWo({ wo: a }, { wo: b }); }).map(function (w) { return pj[w]; });
@@ -2397,8 +2437,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (g('data-issued')) { var rr0 = null; S.records.forEach(function (x) { if (x._id === g('data-issued')) rr0 = x; }); if (rr0) { rr0.issued = t.value.trim() === '' ? null : num(t.value); persistRecords(); renderLog(); } return; }
     if (t.id === 'shiftfile') { if (t.files && t.files[0]) importLog(t.files[0]); t.value = ''; }
     else if (g('data-srow') && (r = findRow(g('data-srow')))) {
-      S.sysmap[r.pid + '|' + r.treat] = t.value; lsSet(K_MAP, JSON.stringify(S.sysmap));
-      S.shift.rows.forEach(function (x) { if (x.pid === r.pid && x.treat === r.treat) fillRow(x); }); saveShift(); renderShift();
+      S.sysmap[sysKey(r)] = t.value; lsSet(K_MAP, JSON.stringify(S.sysmap));
+      S.shift.rows.forEach(function (x) { if (sysKey(x) === sysKey(r)) fillRow(x); }); saveShift(); renderShift();
     }
   });
 
@@ -2739,6 +2779,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (M.bays && M.bays.list && M.bays.list.length) { S.bays = clone(M.bays.list); ST.bu = M.bays.u || 0; ST.bby = M.bays.by || ''; ST.bh = JSON.stringify(S.bays); }
     ST.admins = M.admins.list || []; ST.au = M.admins.u || 0; ST.apw = M.admins.pw || {}; ST.own = M.admins.own || ''; ST.roles = M.admins.rl || {}; var oldRep = ST.reports.filter(function (r) { return !repFresh(r); }); ST.reports = (M.reports || []).concat(oldRep).sort(function (a, b) { return b.ts - a.ts; });
     syOrigProj(); S.dirty = false; stSave();
+    if (S.shift && S.shift.rows) S.shift.rows.forEach(fillRow);
     admCheck(); if (S.pendLogin && !S.role) { var pl = S.pendLogin; S.pendLogin = ''; tryLogin(pl, false); }
     admRestore();
     if (!(S.draft && S.editId)) renderAll(); else { fillHome(); renderStatus(); renderBays(); fillProjectSelect(); renderReports(); renderHo(); }
@@ -2773,6 +2814,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         return;
       }
       if (r.kind === 'ho' && (r.sr || []).length) { var osr = {}; (o.sr || []).forEach(function (x) { osr[x.id] = 1; }); (r.sr || []).forEach(function (x) { if (!osr[x.id] && x.by !== me && (push || r.by === me)) out.push({ k: 'hosr', to: r.by, ti: 'Step rejected', m: pn(x.by) + ' rejected a step of your handover: ' + x.l + (x.n ? ' (' + x.n + ')' : ''), g: { t: 'handover', id: '' } }); }); }
+      if (r.kind === 'ho' && r.st === 'removed' && o.st === 'pending' && r.delby && r.delby !== me && (push || r.by === me)) { out.push({ k: 'repr', to: r.by, ti: 'Your handover', m: pn(r.delby) + ' deleted your handover ' + ((r.ho && r.ho.date) || '') + ' (' + ((r.ho && r.ho.tasks) || []).length + ' tasks). It did not go to the final handover.', g: { t: 'handover', id: '' } }); return; }
       if (r.st === o.st || r.st === 'removed') return;
       if (r.st === 'published' && r.notify && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
       else if ((r.by === me || push) && r.dec && r.dec !== me) out.push({ k: 'repr', to: r.by, ti: 'Your report', m: r.kind === 'ho' ? 'Your ' + (r.hm ? 'marks on the final handover were ' : 'handover was ') + (r.st === 'published' ? (r.sup ? 'closed because ' + r.dec + ' created the handover himself' : r.nrej ? (r.hm ? 'applied to the final handover by ' : 'issued as the final handover by ') + pn(r.dec) + ', but ' + r.nrej + ' step' + (r.nrej > 1 ? 's were' : ' was') + ' rejected: ' + (r.rej || []).slice(0, 3).join('; ') : (r.hm ? 'confirmed and applied to the final handover by ' : 'confirmed and issued as the final handover by ') + pn(r.dec) + (r.ned ? ' (' + r.ned + ' step' + (r.ned > 1 ? 's' : '') + ' corrected)' : '')) : 'rejected by ' + pn(r.dec)) : 'Your report was ' + (r.st === 'deleted' ? 'accepted and the record was removed' : r.st === 'dismissed' ? 'reviewed and closed' : 'published to the team') + ' by ' + r.dec, g: { t: r.kind === 'ho' ? 'handover' : 'reports', id: r.kind === 'ho' ? 'sub:' + r.id : r.id } });
@@ -3413,7 +3455,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
 
   /* ---------- Home card tiles open the matching place ---------- */
   function needGo(wo) {
-    var p = matchProject(wo) || (/m$/i.test(wo) ? matchProject(wo.slice(0, -1)) : null); location.hash = 'projects'; showTab('projects');
+    var p = projOf(wo).p; location.hash = 'projects'; showTab('projects');
     if (p) { if (canPaint()) { S.viewMode = false; selectEdit(p._id); toast('Add the paint data of ' + p.wo + ', then Save.'); } else { S.viewMode = true; selectEdit(p._id); toast(p.wo + ' has no paint data. Ask someone with the Paint data permission to add it.'); } return; }
     S.editId = null; S.draft = null; renderEditor();
     if (canPaint() && $('newwo')) { $('newwo').value = wo; setTimeout(function () { try { $('newwo').scrollIntoView({ block: 'center' }); $('newwo').focus(); } catch (x) {} }, 120); toast(wo + ' is not in the app yet. Tap Add to create it.'); }
@@ -3422,7 +3464,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-hl]') : null; if (!b) return; var a = b.getAttribute('data-hl'), d = sumData();
     if (a === 'need') { var nd = S.shift ? noDataList(S.shift.rows) : []; if (!nd.length) { toast('All running projects have paint data.'); return; } if (nd.length === 1) needGo(nd[0].wo); else openSummary(); }
-    else if (a === 'run') { var run = {}; (d ? d.projects : []).forEach(function (q) { var p = matchProject(q.wo) || (/m$/i.test(q.wo) ? matchProject(q.wo.slice(0, -1)) : null); if (p) run[p._id] = 1; }); S.pRun = Object.keys(run).length ? run : null; S.editId = null; S.draft = null; location.hash = 'projects'; showTab('projects'); renderProjects(); renderEditor(); window.scrollTo(0, 0); }
+    else if (a === 'run') { var run = {}; (d ? d.projects : []).forEach(function (q) { var p = projOf(q.wo).p; if (p) run[p._id] = 1; }); S.pRun = Object.keys(run).length ? run : null; S.editId = null; S.draft = null; location.hash = 'projects'; showTab('projects'); renderProjects(); renderEditor(); window.scrollTo(0, 0); }
     else if (a === 'runoff') { S.pRun = null; renderProjects(); }
   });
 
@@ -3431,6 +3473,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   applyTheme();
   setTimeout(admRestore, 0);
   loadAll();
+  try { if (S.shift && S.shift.rows) S.shift.rows.forEach(fillRow); } catch (e) {}
   stBaseline();
   /* projects added to this file from the repo carry "added": merge each one into this phone once and tell the user */
   var dataMsgs = [];
