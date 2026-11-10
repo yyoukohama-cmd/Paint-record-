@@ -1134,7 +1134,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
         S.ho.sub = id; lsSet('aic-sub', id); saveHo(); stMeta(); renderHo(); toast(SY.on ? 'Submitted. A supervisor will review it.' : 'Saved. Connect Sync so it reaches the supervisor.');
       }, 'Submit');
     }
-    else if (act === 'ho-review') { var rr1 = repById(id); if (!rr1 || !rr1.ho || !rvItemOk(rr1)) return; if (!S.rv || S.rv.rid !== rr1.id) { S.rv = { rid: rr1.id, by: rr1.by, ho: clone(rr1.ho) }; S.rv.ho.tasks.forEach(function (t) { t.cf = ''; }); saveRv(); } renderHo(); try { window.scrollTo(0, 0); } catch (e) {} }
+    else if (act === 'ho-review') { var rr1 = repById(id); if (!rr1 || !rr1.ho || !rvItemOk(rr1)) return; S.rvHide = false; if (!S.rv || S.rv.rid !== rr1.id) { S.rv = { rid: rr1.id, by: rr1.by, ho: clone(rr1.ho) }; S.rv.ho.tasks.forEach(function (t) { t.cf = ''; }); saveRv(); } renderHo(); try { window.scrollTo(0, 0); } catch (e) {} }
     else if (act === 'rv-st' || act === 'rv-cf') { if (!rvOk()) return; var rt = null; S.rv.ho.tasks.forEach(function (t) { if (t.id === id) rt = t; }); if (rt) { if (act === 'rv-st') { var sv = b.getAttribute('data-st'); rt.status = rt.status === sv ? '' : sv; } else { var cv = b.getAttribute('data-v'), was = rt.cf; rt.cf = rt.cf === cv ? '' : cv; if (rt.cf === 'yes') rt.cfby = realName() || 'Supervisor'; else delete rt.cfby; if (rt.cf === 'no' || was === 'no') stepRej(rt, rt.cf === 'no'); } saveRv(); renderHo(); } }
     else if (act === 'rv-all') { if (!rvOk()) return; S.rv.ho.tasks.forEach(function (t) { if (t.cf !== 'no') { if (t.cf !== 'yes') t.cfby = realName() || 'Supervisor'; t.cf = 'yes'; } }); saveRv(); renderHo(); }
     else if (act === 'rv-close') { S.rv = null; saveRv(); renderHo(); }
@@ -1645,7 +1645,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function hdTask(id) { var r = null; if (S.hd) S.hd.tasks.forEach(function (t) { if (t.id === id) r = t; }); return r; }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-act]') : null; if (!b) return; var a = b.getAttribute('data-act'), id = b.getAttribute('data-id');
-    if (a === 'ho-view') { S.hoView = b.getAttribute('data-v'); renderHo(); return; }
+    if (a === 'ho-view') { S.hoView = b.getAttribute('data-v'); S.rvHide = true; renderHo(); window.scrollTo(0, 0); return; }
+    if (a === 'rv-back') { S.rvHide = true; S.hoView = 'drafts'; renderHo(); window.scrollTo(0, 0); return; }
     if (!/^hd-/.test(a) || !S.hd) return;
     if (a === 'hd-set') { var t = hdTask(id); if (!t) return; var st = b.getAttribute('data-st'); t.status = t.status === st ? '' : st; if (t.status) t.mb = realName(); else delete t.mb; saveHd(); renderHo(); }
     else if (a === 'hd-delstep') { S.hd.tasks = S.hd.tasks.filter(function (x) { return x.id !== id; }); saveHd(); renderHo(); }
@@ -1683,7 +1684,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   }
   function renderHo() {
     var box = $('tab-handover'); if (!box) return;
-    if (rvOk()) { box.innerHTML = rvHtml(); return; }
+    if (rvOk() && !S.rvHide) { S.hoView = 'drafts'; box.innerHTML = (hdSeg(hdCount()) || '') + '<div class="actions noprint" style="margin:0 0 10px"><button class="btn sm" data-act="rv-back">← Back to drafts</button></div>' + rvHtml(); hydrateIcons(box); return; }
     hdSync();
     var nd = hdCount(), seg = hdSeg(nd);
     if (S.hoView === 'drafts' && seg) { box.innerHTML = seg + draftsHtml(); hydrateIcons(box); return; }
