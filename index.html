@@ -1521,7 +1521,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     if (L.length) {
       if (L.length) h += '<div class="card noprint"><div class="chead"><div><h2>Waiting for your review (' + L.length + ')</h2><p>Handovers submitted by foremen. Check them, confirm the steps, then create the final handover.</p></div></div>' + L.map(function (r) {
         var n = r.ho && r.ho.tasks ? r.ho.tasks.length : 0;
-        return '<div class="f" style="padding:10px 0;border-top:1px solid var(--line)"><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(r.text || '') + ' · ' + n + ' steps · ' + fmtT(r.ts) + '</span><div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
+        return '<div class="f" style="padding:10px 0;border-top:1px solid var(--line)"><b>' + esc(pn(r.by)) + '</b> <span class="fine">· ' + esc(r.text || '') + ' · ' + n + ' steps · ' + fmtT(r.ts) + '</span><div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
       }).join('') + '</div>';
     } else if (S.role && (!S.canEdit || myNA()) && lsGet('aic-sub')) {
       var r0 = repById(lsGet('aic-sub')), msg = !r0 ? '' : r0.st === 'pending' ? 'Submitted. Waiting for a supervisor to review it.' + ((r0.sr || []).length ? ' Rejected so far: ' + esc(r0.sr.map(function (x) { return x.l + (x.n ? ' (' + x.n + ')' : ''); }).join('; ')) + '.' : '') : r0.st === 'published' && r0.sup ? 'Closed. ' + esc(r0.dec) + ' created the handover himself.' : r0.st === 'published' ? 'Confirmed by ' + esc(r0.dec) + '.' + (r0.nrej ? ' ' + r0.nrej + ' step' + (r0.nrej > 1 ? 's were' : ' was') + ' rejected: ' + esc((r0.rej || []).join('; ')) + '.' : '') : r0.st === 'dismissed' ? 'Rejected by ' + esc(r0.dec) + '. Fix it and submit again.' : '';
@@ -1593,7 +1593,9 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   S.hoView = 'final';
   function saveHd() { lsSet('aic-hd-v1', JSON.stringify(S.hd)); }
   function hoShares() { return !!(S.canEdit && !myNA()); }
-  function whoHtml(t) { var a = t.cb || '', m = t.mb || ''; if (!a && !m) return ''; return '<div class="small who">By <b>' + esc(a || m) + '</b>' + (m && a && lc(m) !== lc(a) ? ' · marked by <b>' + esc(m) + '</b>' : '') + '</div>'; }
+  function whoHtml(t) { var a = t.cb || '', m = t.mb || ''; if (!a && !m) return ''; return '<div class="small who">By <b>' + esc(pn(a || m)) + '</b>' + (m && a && lc(m) !== lc(a) ? ' · marked by <b>' + esc(pn(m)) + '</b>' : '') + '</div>'; }
+  function posName(n) { var r = roleOf(n); return r ? roleLabel(r).charAt(0) + roleLabel(r).slice(1).toLowerCase() : ''; }
+  function pn(n) { n = String(n || '').trim(); if (!n) return ''; var p = posName(n); return p ? n + ' (' + p + ')' : n; }
   function hdRev() { return S.role ? hoPend().filter(rvItemOk) : []; }
   function hdCount() { return (S.hd && !hoShares() ? 1 : 0) + hdRev().length; }
   function hdSeg(nd) {
@@ -1606,13 +1608,13 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var d = S.hd, r = d && d.sub ? repById(d.sub) : null, who = apWho(realName());
     if (!r) return '<div class="hdban">Draft · not sent yet. Submit it for review; until it is approved it is not the final handover and nobody else sees it.</div>';
     if (r.st === 'pending') return '<div class="hdban">Draft · waiting for approval by ' + esc(naOf(realName()) ? who : 'a supervisor') + '. Nobody else sees it until it is approved.' + ((r.sr || []).length ? '<br><b>Rejected so far:</b> ' + esc(r.sr.map(function (x) { return x.l + (x.n ? ' (' + x.n + ')' : '') + ' by ' + x.by; }).join('; ')) : '') + '</div>';
-    if (r.st === 'dismissed') return '<div class="hdban bad">Rejected by ' + esc(r.dec || '') + '. Fix the draft and submit it again.</div>';
+    if (r.st === 'dismissed') return '<div class="hdban bad">Rejected by ' + esc(pn(r.dec || '')) + '. Fix the draft and submit it again.</div>';
     return '';
   }
   function draftsHtml() {
     var h = '', L = hdRev();
     if (L.length) h += '<div class="card"><div class="chead"><div><h2>Waiting for your review (' + L.length + ')</h2><p>Handover drafts from the team. They become the final handover only after you confirm them.</p></div></div>' + L.map(function (r) {
-      return '<div class="hdrow"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · ' + ((r.ho.tasks || []).length) + ' steps · ' + fmtT(r.ts)) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
+      return '<div class="hdrow"><div><b>' + esc(pn(r.by)) + '</b> <span class="fine">· ' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · ' + ((r.ho.tasks || []).length) + ' steps · ' + fmtT(r.ts)) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px"><button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '">Review</button></div></div>';
     }).join('') + '</div>';
     if (!hoShares()) {
       var d = S.hd;
@@ -1620,7 +1622,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       else {
         var pend = d.sub && (repById(d.sub) || {}).st === 'pending', bays = {}, order = [];
         d.tasks.forEach(function (t) { if (!bays[t.bay]) { bays[t.bay] = []; order.push(t.bay); } bays[t.bay].push(t); });
-        h += '<div class="card"><div class="chead"><div><h2>Your handover draft</h2><p>' + esc(d.date + ' · ' + d.shift + ' shift · from ' + (d.from || realName())) + '</p></div></div>' + hdStatus() +
+        h += '<div class="card"><div class="chead"><div><h2>Your handover draft</h2><p>' + esc(d.date + ' · ' + d.shift + ' shift · from ' + pn(d.from || realName())) + '</p></div></div>' + hdStatus() +
           '<div class="fields"><div class="f"><label for="hd-shift">Shift</label><select id="hd-shift" data-hdf="shift"><option' + (d.shift === 'Day' ? ' selected' : '') + '>Day</option><option' + (d.shift === 'Night' ? ' selected' : '') + '>Night</option></select></div><div class="f wide"><label for="hd-to">Received by (incoming supervisor)</label><input id="hd-to" data-hdf="to" type="text" value="' + esc(d.to || '') + '" placeholder="Name of the incoming supervisor"></div></div></div>';
         order.sort(function (a, b) { return bayNo(a) - bayNo(b); }).forEach(function (b) {
           h += '<div class="card"><div class="bayhd"><h3>' + esc(b) + '</h3></div><div class="slist">' + bays[b].map(function (t) {
@@ -1662,13 +1664,13 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function rvHtml() {
     var rv = S.rv, ho = rv.ho, bays = {}, order = [];
     ho.tasks.forEach(function (t) { if (!bays[t.bay]) { bays[t.bay] = []; order.push(t.bay); } bays[t.bay].push(t); });
-    var h = '<div class="card noprint"><div class="chead"><div><h2>Review handover</h2><p>From ' + esc(rv.by) + ' · ' + esc(ho.date) + ' · ' + esc(ho.shift) + ' shift. Confirm each step you accept. You can change Done / Not done and the note first. Rejected or unconfirmed steps are left out of the final handover.</p></div></div><div class="f" style="margin-top:8px"><label for="rv-to">Received by (incoming supervisor)</label><input id="rv-to" data-rvto="1" type="text" value="' + esc(ho.to || '') + '" placeholder="' + (ho.to ? '' : 'Not filled by ' + esc(rv.by)) + '" autocomplete="off"></div></div>';
+    var h = '<div class="card noprint"><div class="chead"><div><h2>Review handover</h2><p>From ' + esc(pn(rv.by)) + ' · ' + esc(ho.date) + ' · ' + esc(ho.shift) + ' shift. Confirm each step you accept. You can change Done / Not done and the note first. Rejected or unconfirmed steps are left out of the final handover.</p></div></div><div class="f" style="margin-top:8px"><label for="rv-to">Received by (incoming supervisor)</label><input id="rv-to" data-rvto="1" type="text" value="' + esc(ho.to || '') + '" placeholder="' + (ho.to ? '' : 'Not filled by ' + esc(rv.by)) + '" autocomplete="off"></div></div>';
     order.sort(function (a, b) { return bayNo(a) - bayNo(b); }).forEach(function (b) {
       h += '<div class="card"><div class="bayhd"><h3>' + esc(b) + '</h3></div><div class="slist">' + bays[b].map(function (t) {
         var id = esc(t.id), cls = t.cf === 'yes' ? ' dn' : t.cf === 'no' ? ' no' : '';
         return '<div class="hline rvl' + cls + '"><div class="hm"><div class="hl-top"><b>' + esc(t.wo) + '</b> <span class="tag">' + esc(String(t.step || '').toUpperCase()) + '</span></div>' + whoHtml(t.cb || t.mb ? t : { cb: rv.by }) + '<input class="hnote" data-rvnote="' + id + '" type="text" value="' + esc(t.note || '') + '" placeholder="Note" aria-label="Note"></div>' +
           '<div class="hctl"><div class="seg" role="group" aria-label="Status"><button type="button" class="rel" data-act="rv-st" data-id="' + id + '" data-st="yes" aria-pressed="' + (t.status === 'yes') + '">Done</button><button type="button" class="no" data-act="rv-st" data-id="' + id + '" data-st="no" aria-pressed="' + (t.status === 'no') + '">Not done</button></div>' +
-          '<div class="seg" role="group" aria-label="Review"><button type="button" class="rel" data-act="rv-cf" data-id="' + id + '" data-v="yes" aria-pressed="' + (t.cf === 'yes') + '">Confirm</button><button type="button" data-ed="step" data-id="' + id + '">Edit</button><button type="button" class="no" data-act="rv-cf" data-id="' + id + '" data-v="no" aria-pressed="' + (t.cf === 'no') + '">Reject</button></div></div>' + (t.ed ? '<div class="small"><b>Edited by ' + esc(t.ed) + '</b>' + (t.was ? ' · was: ' + esc(t.was) : '') + '</div>' : '') + '</div>';
+          '<div class="seg" role="group" aria-label="Review"><button type="button" class="rel" data-act="rv-cf" data-id="' + id + '" data-v="yes" aria-pressed="' + (t.cf === 'yes') + '">Confirm</button><button type="button" data-ed="step" data-id="' + id + '">Edit</button><button type="button" class="no" data-act="rv-cf" data-id="' + id + '" data-v="no" aria-pressed="' + (t.cf === 'no') + '">Reject</button></div></div>' + (t.ed ? '<div class="small"><b>Edited by ' + esc(pn(t.ed)) + '</b>' + (t.was ? ' · was: ' + esc(t.was) : '') + '</div>' : '') + '</div>';
       }).join('') + '</div></div>';
     });
     var cn = ho.tasks.filter(function (t) { return t.cf === 'yes'; }).length;
@@ -1710,7 +1712,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
           var id = esc(t.id), cls = t.status === 'yes' ? ' dn' : t.status === 'no' ? ' no' : '';
           var ctl = t.kind === 'release' ? '<button class="btn sm primary noprint" data-act="ho-release" data-id="' + id + '">Release</button>' :
             '<div class="seg noprint" role="group" aria-label="Status"><button type="button" class="rel" data-act="ho-set" data-id="' + id + '" data-st="yes" aria-pressed="' + (t.status === 'yes') + '">Done</button><button type="button" class="no" data-act="ho-set" data-id="' + id + '" data-st="no" aria-pressed="' + (t.status === 'no') + '">Not done</button></div><span class="pbox">' + (t.status === 'yes' ? '&#9745; Done' : t.status === 'no' ? '&#9746; Not done' : '&#9744; Done') + '</span>';
-          return '<div class="hline' + cls + '"><div class="hm"><div class="hl-top"><span class="tag' + (t.kind === 'bundle' ? ' bun' : t.kind === 'release' ? ' rel' : '') + '">' + esc(t.step.toUpperCase()) + '</span>' + (t.carried ? ' <span class="tag">CARRIED OVER</span>' : '') + '</div>' + whoHtml(t) + updHtml(t.by, t.u) + (t.cfby ? '<div class="small"><b>Confirmed by ' + esc(t.cfby) + '</b></div>' : '') +
+          return '<div class="hline' + cls + '"><div class="hm"><div class="hl-top"><span class="tag' + (t.kind === 'bundle' ? ' bun' : t.kind === 'release' ? ' rel' : '') + '">' + esc(t.step.toUpperCase()) + '</span>' + (t.carried ? ' <span class="tag">CARRIED OVER</span>' : '') + '</div>' + whoHtml(t) + updHtml(t.by, t.u) + (t.cfby ? '<div class="small"><b>Confirmed by ' + esc(pn(t.cfby)) + '</b></div>' : '') +
             (showPaint() && payTxt(t) ? '<div class="small"><b>Paint required:</b> ' + esc(payTxt(t)) + '</div>' : '') +
             (t.kind === 'release' ? '<div class="small">Press Release when these pieces leave the paint shop. A Bundle step is created.</div>' : '<input class="hnote noprint" data-hnote="' + id + '" type="text" value="' + esc(t.note) + '" placeholder="Note" aria-label="Note">' + (t.note ? '<div class="small pbox2">' + esc(t.note) + '</div>' : '')) + '</div><div class="hctl">' + ctl + '</div></div>';
         }).join('') + '</div>';
@@ -2456,7 +2458,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function rvOf(n) { n = lc(n); if (n === lc(OWNER_NAME)) return true; if (STAFF.test(roleOf(n))) return true; var e = ST.roles[n]; return !!(e && e.rv); }
   function canPaint() { return !!S.role && pdOf(realName()); }
   function canReview() { return !!S.role && rvOf(realName()); }
-  function roleLabel(r) { return { owner: 'ADMIN', manager: 'MANAGER', supervisor: 'SUPERVISOR', engineer: 'ENGINEER', foreman: 'FOREMAN', checker: 'CHECKER', painter: 'PAINTER' }[r] || 'ADMIN'; }
+  function roleLabel(r) { return { owner: 'ENGINEER', manager: 'MANAGER', supervisor: 'SUPERVISOR', engineer: 'ENGINEER', foreman: 'FOREMAN', checker: 'CHECKER', painter: 'PAINTER' }[r] || 'ADMIN'; }
   /* anyone signed in (foreman, checker, painter too) can mark steps on the log sheet and build a handover; their marks stay on their phone */
   function canMark() { return !!S.role; }
   function applyRole() { var staff = S.role === 'owner' || STAFF.test(S.role); S.canEdit = staff; S.pwOk = staff; }
@@ -2499,7 +2501,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       adminOk({ ok: true, owner: !!st.o, role: rl });
     });
   }
-  function updHtml(by, u) { if (!by || !u) return ''; var d = new Date(u); return '<span class="upd">Updated by ' + esc(by) + ' \u00b7 ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + fmtT(u) + '</span>'; }
+  function updHtml(by, u) { if (!by || !u) return ''; var d = new Date(u); return '<span class="upd">Updated by ' + esc(pn(by)) + ' \u00b7 ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + fmtT(u) + '</span>'; }
   var syBusy = false, syTimer = null, syPoll = null, syState = 'off', syPend = false, syPendNav = null;
   var SY_DB = 'https://aic-paint-default-rtdb.firebaseio.com';
   function syKey() { return (SY.key || '').trim().replace(/[^A-Za-z0-9_-]/g, ''); }
@@ -2614,7 +2616,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     Object.keys(up).forEach(function (n) { groupMsgs(out, n, 'recu', 'Record updated', up[n], function (r) { return 'updated a record: ' + recLabel(r); }, function (c, r) { return 'updated ' + c + ' records (latest: ' + recLabel(r) + ')'; }, 'log', function (r) { return r._id; }); });
     var gone = L.records.filter(function (r) { return M.tomb[r._id] && M.tomb[r._id] >= (r.u || r.ts || 0) && (push || !SY.tomb[r._id]); });
     gone.forEach(function (r) { var n = M.tby[r._id] || 'An admin'; if (n !== me) out.push({ k: 'recd', ti: 'Record removed', m: n + ' removed a record: ' + recLabel(r), g: { t: 'log', id: '' } }); });
-    if (M.ho && (!L.ho || L.ho.id !== M.ho.id)) { by = M.ho.by || ''; if (by && by !== me) out.push({ k: 'hon', ti: 'New handover', m: by + ' created the shift handover (' + M.ho.tasks.length + ' tasks)', g: { t: 'handover', id: '' } }); }
+    if (M.ho && (!L.ho || L.ho.id !== M.ho.id)) { by = M.ho.by || ''; if (by && by !== me) out.push({ k: 'hon', ti: 'New handover', m: pn(by) + ' created the shift handover (' + M.ho.tasks.length + ' tasks)', g: { t: 'handover', id: '' } }); }
     else if (M.ho && L.ho) {
       var lt = {}; L.ho.tasks.forEach(function (t) { lt[t.id] = t; });
       var st = {}, ad = {};
@@ -2683,16 +2685,16 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       if (AP_K.test(r.kind) || ((r.kind === 'pi' || r.kind === 'pc') && r.ap)) { apNotes(r, o, me, push, out); return; }
       if (r.kind === 'pi' || r.kind === 'pc') return;
       if (!o) {
-        if (r.kind === 'ho' && r.st === 'pending' && push) { (naOf(r.by) ? approverNames(r.by) : reviewerNames(r.by)).forEach(function (n) { out.push({ k: 'hor', to: n, ti: 'Handover for review', m: r.by + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }); }
-        else if (r.kind === 'ho' && r.st === 'pending') { if (amAdm && r.by !== me) out.push({ k: 'hor', ti: 'Handover for review', m: r.by + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }
+        if (r.kind === 'ho' && r.st === 'pending' && push) { (naOf(r.by) ? approverNames(r.by) : reviewerNames(r.by)).forEach(function (n) { out.push({ k: 'hor', to: n, ti: 'Handover for review', m: pn(r.by) + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }); }
+        else if (r.kind === 'ho' && r.st === 'pending') { if (amAdm && r.by !== me) out.push({ k: 'hor', ti: 'Handover for review', m: pn(r.by) + ' submitted a handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)', g: { t: 'handover', id: '' } }); }
         else if (r.st === 'pending' && amAdm && r.by !== me) out.push({ k: 'rep', ti: 'New report', m: r.by + ' reported a problem: ' + repLine(r), g: { t: 'reports', id: r.id } });
         else if (r.st === 'published' && r.notify && r.by !== me && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
         return;
       }
-      if (r.kind === 'ho' && (r.sr || []).length) { var osr = {}; (o.sr || []).forEach(function (x) { osr[x.id] = 1; }); (r.sr || []).forEach(function (x) { if (!osr[x.id] && x.by !== me && (push || r.by === me)) out.push({ k: 'hosr', to: r.by, ti: 'Step rejected', m: x.by + ' rejected a step of your handover: ' + x.l + (x.n ? ' (' + x.n + ')' : ''), g: { t: 'handover', id: '' } }); }); }
+      if (r.kind === 'ho' && (r.sr || []).length) { var osr = {}; (o.sr || []).forEach(function (x) { osr[x.id] = 1; }); (r.sr || []).forEach(function (x) { if (!osr[x.id] && x.by !== me && (push || r.by === me)) out.push({ k: 'hosr', to: r.by, ti: 'Step rejected', m: pn(x.by) + ' rejected a step of your handover: ' + x.l + (x.n ? ' (' + x.n + ')' : ''), g: { t: 'handover', id: '' } }); }); }
       if (r.st === o.st || r.st === 'removed') return;
       if (r.st === 'published' && r.notify && r.dec !== me) out.push({ k: 'repp', ti: 'Team report', m: 'Report: ' + repLine(r), g: { t: 'reports', id: r.id } });
-      else if ((r.by === me || push) && r.dec && r.dec !== me) out.push({ k: 'repr', to: r.by, ti: 'Your report', m: r.kind === 'ho' ? 'Your handover was ' + (r.st === 'published' ? (r.sup ? 'closed because ' + r.dec + ' created the handover himself' : r.nrej ? 'issued as the final handover by ' + r.dec + ', but ' + r.nrej + ' step' + (r.nrej > 1 ? 's were' : ' was') + ' rejected: ' + (r.rej || []).slice(0, 3).join('; ') : 'confirmed and issued as the final handover by ' + r.dec + (r.ned ? ' (' + r.ned + ' step' + (r.ned > 1 ? 's' : '') + ' corrected)' : '')) : 'rejected by ' + r.dec) : 'Your report was ' + (r.st === 'deleted' ? 'accepted and the record was removed' : r.st === 'dismissed' ? 'reviewed and closed' : 'published to the team') + ' by ' + r.dec, g: { t: r.kind === 'ho' ? 'handover' : 'reports', id: r.kind === 'ho' ? '' : r.id } });
+      else if ((r.by === me || push) && r.dec && r.dec !== me) out.push({ k: 'repr', to: r.by, ti: 'Your report', m: r.kind === 'ho' ? 'Your handover was ' + (r.st === 'published' ? (r.sup ? 'closed because ' + r.dec + ' created the handover himself' : r.nrej ? 'issued as the final handover by ' + pn(r.dec) + ', but ' + r.nrej + ' step' + (r.nrej > 1 ? 's were' : ' was') + ' rejected: ' + (r.rej || []).slice(0, 3).join('; ') : 'confirmed and issued as the final handover by ' + pn(r.dec) + (r.ned ? ' (' + r.ned + ' step' + (r.ned > 1 ? 's' : '') + ' corrected)' : '')) : 'rejected by ' + pn(r.dec)) : 'Your report was ' + (r.st === 'deleted' ? 'accepted and the record was removed' : r.st === 'dismissed' ? 'reviewed and closed' : 'published to the team') + ' by ' + r.dec, g: { t: r.kind === 'ho' ? 'handover' : 'reports', id: r.kind === 'ho' ? '' : r.id } });
     });
     return out;
   }
@@ -3097,11 +3099,11 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var L = S.role ? apPending().concat(hoPend().filter(function (r) { return naOf(r.by) && rvItemOk(r); })) : [], M = S.role && naOf(realName()) ? apMine() : [], h = '';
     L.sort(function (a, b) { return b.ts - a.ts; });
     if (L.length) h += '<div class="card apc"><div class="aph"><h2>Waiting for your approval</h2><span class="apn">' + L.length + '</span></div>' + L.map(function (r) {
-      return '<div class="apr"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px">' +
+      return '<div class="apr"><div><b>' + esc(pn(r.by)) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px">' +
         (r.kind === 'ho' ? '<button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '" data-goho="1">Review</button>' : (r.kind === 'pd' ? '<button class="btn sm" data-ap="see" data-id="' + esc(r.id) + '">See changes</button>' : '') + (/^(pd|rc|pi)$/.test(r.kind) ? '<button class="btn sm" data-ap="edit" data-id="' + esc(r.id) + '">Edit</button>' : '') + '<button class="btn sm primary" data-ap="ok" data-id="' + esc(r.id) + '">Approve</button><button class="btn sm danger" data-ap="no" data-id="' + esc(r.id) + '">Reject</button>') + '</div></div>';
     }).join('') + '</div>';
     if (M.length) h += '<div class="card apc"><div class="aph"><h2>Your requests</h2></div>' + M.map(function (r) {
-      var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap, s = a === 'pending' || a === 'wait' ? '<span class="chip">Waiting for approval</span>' : a === 'published' || a === 'ok' ? '<span class="chip ok">' + (r.ed ? 'Corrected and approved by ' : 'Approved by ') + esc(r.dec || '') + '</span>' : '<span class="chip">Rejected by ' + esc(r.dec || '') + '</span>';
+      var a = AP_K.test(r.kind) || r.kind === 'ho' ? r.st : r.ap, s = a === 'pending' || a === 'wait' ? '<span class="chip">Waiting for approval</span>' : a === 'published' || a === 'ok' ? '<span class="chip ok">' + (r.ed ? 'Corrected and approved by ' : 'Approved by ') + esc(pn(r.dec || '')) + '</span>' : '<span class="chip">Rejected by ' + esc(pn(r.dec || '')) + '</span>';
       return '<div class="apr"><span class="fine">' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span> ' + s + '</div>';
     }).join('') + '<p class="fine" style="margin:6px 0 0">Approved by: ' + esc(apWho(realName())) + '</p></div>';
     box.innerHTML = h; box.hidden = !h;
@@ -3111,8 +3113,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var rows = [];
     if (r.kind === 'ho' && r.ho) {
       var t = r.ho.tasks || [], g = {}, o = [];
-      t.forEach(function (x) { var k = x.bay + ' · ' + x.wo; if (!g[k]) { g[k] = []; o.push(k); } g[k].push(String(x.step || '') + (x.status === 'yes' ? ' ✓' : x.status === 'no' ? ' ✗' : '') + (x.note ? ' (' + x.note + ')' : '') + ' · by ' + (x.mb || x.cb || r.by)); });
-      rows.push('<div class="fine">' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · from ' + (r.ho.from || r.by) + ' · received by ' + (r.ho.to || '—')) + (r.ho.to ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>');
+      t.forEach(function (x) { var k = x.bay + ' · ' + x.wo; if (!g[k]) { g[k] = []; o.push(k); } g[k].push(String(x.step || '') + (x.status === 'yes' ? ' ✓' : x.status === 'no' ? ' ✗' : '') + (x.note ? ' (' + x.note + ')' : '') + ' · by ' + pn(x.mb || x.cb || r.by)); });
+      rows.push('<div class="fine">' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift · from ' + pn(r.ho.from || r.by) + ' · received by ' + (r.ho.to || '—')) + (r.ho.to ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>');
       o.forEach(function (k) { rows.push('<div class="apd1"><b>' + esc(k) + '</b> <span>' + esc(g[k].join(', ')) + '</span></div>'); });
     } else if (r.kind === 'rc') { var c = r.rc.rec; rows.push('<div class="apd1">' + esc(c.date + ' · ' + (c.system || '') + ' · ' + nf(c.area || 0) + ' m² · loss ' + nf(c.lossPct || 0) + '% · DFT ' + nf(c.dft || 0) + ' µm' + (c.issued != null ? ' · issued ' + nf(c.issued) + ' L' : '')) + '</div>'); }
     else if (r.kind === 'pi') { var q = r.pi; rows.push('<div class="apd1">' + esc(q.date + ' · batches ' + (q.batches || []).join(', ') + ' · received by ' + (q.recv || '—') + (q.note ? ' · ' + q.note : '')) + (q.recv ? '' : ' <b style="color:var(--danger)">(not filled)</b>') + '</div>'); }
@@ -3133,13 +3135,13 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var lab = apLabel(r), a = AP_K.test(r.kind) ? r.st : r.ap, oa = o ? (AP_K.test(o.kind) ? o.st : o.ap) : '';
     if (!o) {
       if (a !== 'pending' && a !== 'wait') return;
-      if (push) approverNames(r.by).forEach(function (n) { out.push({ k: 'apr', to: n, ti: 'Approval needed', m: r.by + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } }); });
-      else if (r.by !== me && canApproveFor(r.by)) out.push({ k: 'apr', ti: 'Approval needed', m: r.by + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } });
+      if (push) approverNames(r.by).forEach(function (n) { out.push({ k: 'apr', to: n, ti: 'Approval needed', m: pn(r.by) + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } }); });
+      else if (r.by !== me && canApproveFor(r.by)) out.push({ k: 'apr', ti: 'Approval needed', m: pn(r.by) + ' sent ' + lab + ' for approval', g: { t: 'home', id: '' } });
       return;
     }
     if (a === oa || !r.dec || r.dec === me) return;
     var yes = a === 'published' || a === 'ok', no = a === 'dismissed' || a === 'no'; if (!yes && !no) return;
-    if (push || r.by === me) out.push({ k: 'apd', to: r.by, ti: yes ? (r.ed ? 'Approved with changes' : 'Approved') : 'Rejected', m: 'Your ' + lab + ' was ' + (yes ? (r.ed ? 'corrected and approved' : 'approved') : 'rejected') + ' by ' + r.dec, g: { t: 'home', id: '' } });
+    if (push || r.by === me) out.push({ k: 'apd', to: r.by, ti: yes ? (r.ed ? 'Approved with changes' : 'Approved') : 'Rejected', m: 'Your ' + lab + ' was ' + (yes ? (r.ed ? 'corrected and approved' : 'approved') : 'rejected') + ' by ' + pn(r.dec), g: { t: 'home', id: '' } });
   }
   function abBox(n) {
     if (!naOf(n)) return '';
