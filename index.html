@@ -3383,11 +3383,13 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   });
 
   /* --- new version notice (only when served from the web) --- */
-  var BUILD = 'aic-paint-v62';
+  var BUILD = 'aic-paint-v63';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
-      var m = /const CACHE = '([^']+)'/.exec(t); if (m && m[1] !== BUILD) updShow();
+      var m = /const CACHE = '([^']+)'/.exec(t); if (!m || m[1] === BUILD) return;
+      /* show the notice only when the page on the server really is newer than this one (never loops after Update) */
+      return fetch('index.html?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (x) { var b = /var BUILD = '([^']+)'/.exec(x); if (b && b[1] !== BUILD) updShow(); });
     }).catch(function () {});
   }
   function updNow() {
