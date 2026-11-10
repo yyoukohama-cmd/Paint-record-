@@ -1041,7 +1041,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     document.querySelectorAll('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
     if (t === 'log') renderLog();
     if (t === 'shift') renderShift();
-    if (t === 'handover') renderHo();
+    if (t === 'handover') { renderHo(); if (changed && SY.on) syNow(true); }
     if (t === 'reports') renderReports();
     if (changed) { try { window.scrollTo(0, 0); var sb = document.querySelector('.tabs button[aria-selected="true"]'); if (sb && sb.parentNode) sb.parentNode.scrollLeft = sb.offsetLeft - 20; } catch (e) {} }
     if (t === 'projects') { renderProjects(); if (S.editId && !S.draft && getP(S.editId)) selectEdit(S.editId); else renderEditor(); }
@@ -2513,7 +2513,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     syOrigProj(); S.dirty = false; stSave();
     admCheck(); if (S.pendLogin && !S.role) { var pl = S.pendLogin; S.pendLogin = ''; tryLogin(pl, false); }
     admRestore();
-    if (!(S.draft && S.editId)) renderAll(); else { renderStatus(); renderBays(); fillProjectSelect(); renderReports(); }
+    if (!(S.draft && S.editId)) renderAll(); else { fillHome(); renderStatus(); renderBays(); fillProjectSelect(); renderReports(); renderHo(); }
   }
   function repLine(r) { return r.kind === 'ho' ? 'Handover for review (' + ((r.ho && r.ho.tasks || []).length) + ' steps)' : r.kind === 'bay' ? (r.bayName || 'Bay') + ': ' + r.text : (r.summary || 'Record') + ' - ' + r.text; }
   function reviewerNames(by) {
@@ -2579,13 +2579,15 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     }).catch(function (e) { if (e && e.retry && tries < 3) return syRound(part, manual, tries + 1, bag); throw e; });
   }
   function syNow(manual) {
-    if (!SY.on || !syKey() || syBusy) return Promise.resolve();
+    if (syBusy) { syAgain = true; return Promise.resolve(); }
+    if (!SY.on || !syKey()) return Promise.resolve();
     if (!navigator.onLine) { syState = 'offline'; syPaint(); return Promise.resolve(); }
     syBusy = true; syState = 'sync'; syPaint(); var bag = [];
     return syRound('meta', manual, 0, bag).then(function () { return syRound('main', manual, 0, bag); }).then(function () { syState = 'ok'; }).catch(function (e) {
       syState = navigator.onLine ? 'err' : 'offline'; SY.err = e && e.message || 'error'; sySave();
-    }).then(function () { syBusy = false; syPaint(); cfgLoad(); if (bag.length) syNotify(bag); if (syPendNav) { var g = syPendNav; syPendNav = null; navTo(g); } });
+    }).then(function () { syBusy = false; syPaint(); cfgLoad(); if (bag.length) syNotify(bag); if (syPendNav) { var g = syPendNav; syPendNav = null; navTo(g); } if (syAgain) { syAgain = false; setTimeout(function () { syNow(true); }, 300); } });
   }
+  var syAgain = false;
   function syLater(part) { if (!SY.on) return; SY.dm[part || 'main'] = true; sySave(); clearTimeout(syTimer); syTimer = setTimeout(function () { syNow(); }, 2500); }
 
   /* --- opening the place where something changed --- */
@@ -2616,7 +2618,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     }
   }
   function navFromHash(h) { try { var g = JSON.parse(decodeURIComponent(h.replace(/^nav=/, ''))); history.replaceState(null, '', location.pathname + location.search); syPendNav = g; navTo(g); } catch (e) {} }
-  try { if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'aic-nav') { navTo(e.data.g); syNow(); } }); } catch (e) {}
+  try { if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'aic-nav') { navTo(e.data.g); syPendNav = e.data.g; syNow(true); } }); } catch (e) {}
 
   /* --- notifications --- */
   function syNotify(msgs) {
