@@ -397,7 +397,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
  body.print-ho .card{box-shadow:none;margin:0 0 4px;padding:6px 8px}
  body.print-ho #tab-handover{gap:4px}
 }
-.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}</style>
+.apc .aph{display:flex;align-items:center;gap:8px;margin-bottom:4px}.apc .aph h2{margin:0;font-size:1.05rem;font-weight:600;flex:1}.apc .apn{background:var(--danger,#c40f3c);color:#fff;border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:700}.apc .apr{padding:9px 0;border-top:1px solid var(--line)}.abbox{flex-basis:100%;margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:var(--soft,rgba(21,101,192,.08))}.abch{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.abp{border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}.abp[aria-pressed=true]{border:1.5px solid var(--accent);color:var(--accent);font-weight:600}.abp[disabled]{opacity:.85;cursor:default}.apdet{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.04));font-size:.88rem}.apd1{padding:2px 0}.apd1 span{color:var(--muted)}</style>
 </head>
 <body>
 <header class="top">
@@ -2957,7 +2957,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var L = S.role ? apPending().concat(hoPend().filter(function (r) { return naOf(r.by) && rvItemOk(r); })) : [], M = S.role && naOf(realName()) ? apMine() : [], h = '';
     L.sort(function (a, b) { return b.ts - a.ts; });
     if (L.length) h += '<div class="card apc"><div class="aph"><h2>Waiting for your approval</h2><span class="apn">' + L.length + '</span></div>' + L.map(function (r) {
-      return '<div class="apr"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div><div class="actions" style="margin-top:6px">' +
+      return '<div class="apr"><div><b>' + esc(r.by) + '</b> <span class="fine">· ' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span></div>' + apDetail(r) + '<div class="actions" style="margin-top:6px">' +
         (r.kind === 'ho' ? '<button class="btn sm primary" data-act="ho-review" data-id="' + esc(r.id) + '" data-goho="1">Review</button>' : (r.kind === 'pd' ? '<button class="btn sm" data-ap="see" data-id="' + esc(r.id) + '">See changes</button>' : '') + '<button class="btn sm primary" data-ap="ok" data-id="' + esc(r.id) + '">Approve</button><button class="btn sm danger" data-ap="no" data-id="' + esc(r.id) + '">Reject</button>') + '</div></div>';
     }).join('') + '</div>';
     if (M.length) h += '<div class="card apc"><div class="aph"><h2>Your requests</h2></div>' + M.map(function (r) {
@@ -2965,6 +2965,20 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
       return '<div class="apr"><span class="fine">' + esc(apLabel(r)) + ' · ' + fmtT(r.ts) + '</span> ' + s + '</div>';
     }).join('') + '<p class="fine" style="margin:6px 0 0">Approved by: ' + esc(apWho(realName())) + '</p></div>';
     box.innerHTML = h; box.hidden = !h;
+  }
+
+  function apDetail(r) {
+    var rows = [];
+    if (r.kind === 'ho' && r.ho) {
+      var t = r.ho.tasks || [], g = {}, o = [];
+      t.forEach(function (x) { var k = x.bay + ' · ' + x.wo; if (!g[k]) { g[k] = []; o.push(k); } g[k].push(String(x.step || '') + (x.status === 'yes' ? ' ✓' : x.status === 'no' ? ' ✗' : '') + (x.note ? ' (' + x.note + ')' : '')); });
+      rows.push('<div class="fine">' + esc((r.ho.date || '') + ' · ' + (r.ho.shift || '') + ' shift' + (r.ho.from ? ' · from ' + r.ho.from : '')) + '</div>');
+      o.forEach(function (k) { rows.push('<div class="apd1"><b>' + esc(k) + '</b> <span>' + esc(g[k].join(', ')) + '</span></div>'); });
+    } else if (r.kind === 'rc') { var c = r.rc.rec; rows.push('<div class="apd1">' + esc(c.date + ' · ' + (c.system || '') + ' · ' + nf(c.area || 0) + ' m² · loss ' + nf(c.lossPct || 0) + '% · DFT ' + nf(c.dft || 0) + ' µm' + (c.issued != null ? ' · issued ' + nf(c.issued) + ' L' : '')) + '</div>'); }
+    else if (r.kind === 'pi') { var q = r.pi; rows.push('<div class="apd1">' + esc(q.date + ' · batches ' + (q.batches || []).join(', ') + (q.recv ? ' · received by ' + q.recv : '') + (q.note ? ' · ' + q.note : '')) + '</div>'); }
+    else if (r.kind === 'pd') { (r.pd.systems || []).forEach(function (s) { rows.push('<div class="apd1"><b>' + esc(s.name) + '</b> <span>' + esc((s.coats || []).map(function (c) { return c.label + ' DFT ' + (c.dft || '-'); }).join(', ')) + '</span></div>'); }); }
+    else if (r.kind === 'ls') { var bs = {}; r.ls.shift.rows.forEach(function (x) { bs[x.bay] = (bs[x.bay] || 0) + 1; }); rows.push('<div class="apd1">' + esc(Object.keys(bs).map(function (b) { return b + ': ' + bs[b] + ' lines'; }).join(' · ')) + '</div>'); }
+    return rows.length ? '<div class="apdet">' + rows.join('') + '</div>' : '';
   }
   function apDecide(r, ok) {
     var me = realName() || 'Admin', now = Date.now();
