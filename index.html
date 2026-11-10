@@ -1087,7 +1087,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var tab = b.getAttribute('data-tab'); if (tab) { var tf = b.getAttribute('data-f'); if (tf && $('logfilter')) $('logfilter').value = tf; goTab(tab); return; }
     var act = b.getAttribute('data-act'), id = b.getAttribute('data-id'), si = +b.getAttribute('data-si'), ci = +b.getAttribute('data-ci');
     if (/^(save-project|add-coat|del-coat|add-system|del-system|del-project|del-yes|add-project)$/.test(act) && !canPaint()) return;
-    if (/^(set-step|set-plan|x-open|x-tog|x-add|del-x|toggle-rel|add-pdata|reset-shift|clear-shift|pick-shift)$/.test(act) && !S.canEdit && !(act === 'pick-shift' && S.tab === 'handover')) return;
+    if (/^(set-step|set-plan|x-open|x-tog|x-add|del-x)$/.test(act) && !canMark()) return;
+    if (/^(toggle-rel|add-pdata|reset-shift|clear-shift|pick-shift)$/.test(act) && !S.canEdit && !(act === 'pick-shift' && S.tab === 'handover')) return;
     if (act === 'rec-menu') { if (rpp) rpp.hidden = !rpp.hidden; markDock(); return; }
     if (act === 'save-record') saveRecord();
     else if (act === 'open-summary') openSummary();
@@ -1429,7 +1430,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     var p = getP(r.pid), ss = sysList(p), fin = isFinal(r), id = esc(r.id);
     var sel = ss.length > 1 ? '<select class="s-sys" data-srow="' + id + '" aria-label="Paint system">' + ss.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === r.sid ? ' selected' : '') + '>' + esc(s.name) + '</option>'; }).join('') + '</select>' : '';
     var rel = r.status === 'released', st = steps(r), dn = Math.min(r.done || 0, st.length), alldone = dn >= st.length;
-    var chips = st.map(function (x, i) { return '<button type="button" class="stepbtn" data-act="set-step" data-id="' + id + '" data-n="' + (i + 1) + '" aria-pressed="' + (i < dn) + '"' + (S.canEdit ? '' : ' disabled') + '>' + (i < dn ? '✓ ' : '') + esc(x) + '</button>'; }).join('');
+    var chips = st.map(function (x, i) { return '<button type="button" class="stepbtn" data-act="set-step" data-id="' + id + '" data-n="' + (i + 1) + '" aria-pressed="' + (i < dn) + '"' + (canMark() ? '' : ' disabled') + '>' + (i < dn ? '✓ ' : '') + esc(x) + '</button>'; }).join('');
     var planSel = st.length > 1 ? '<div class="todo"><span class="nxt">Paint for:</span>' + st.map(function (x, i) { return '<button type="button" class="chipb" style="min-height:34px;padding:5px 12px" data-act="set-plan" data-id="' + id + '" data-n="' + (i + 1) + '" aria-pressed="' + ((r.plan || 1) === i + 1) + '">' + (i + 1) + (i ? ' steps' : ' step') + '</button>'; }).join('') + '</div>' : '';
     var ctl = (st.length ? '<div class="todo"><span class="nxt">To do this shift:</span>' + chips + '</div>' : '') + (alldone ? '<button type="button" class="relbtn" data-act="toggle-rel" data-id="' + id + '" aria-pressed="' + rel + '"' + (S.canEdit ? '' : ' disabled') + '>' + (rel ? 'Released · bundle next' : 'Release') + '</button>' : '');
     var xs = r.extras.map(function (x, i) { return '<button type="button" class="xchip" data-act="del-x" data-id="' + id + '" data-xi="' + i + '" aria-label="Remove ' + esc(x) + '">' + esc(x) + ' ×</button>'; }).join('');
@@ -1438,7 +1439,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
     return '<div class="srow' + (r.warn ? ' warn' : '') + '" style="border-left:6px solid ' + bayCol(r.bay) + '"><div class="smain"><div class="stop"><span class="baychip" style="background:' + bayCol(r.bay) + '">' + esc(r.bay) + '</span><b>' + esc(r.wo) + '</b>' + (noDataRow(r) ? '<span class="ndtag">No Data Available</span>' : '') + '<span class="chip gray">' + esc(r.treat || '-') + '</span><span class="stage">' + esc(r.stage) + (r.oneSide ? ' · one side' : '') + '</span></div>' +
       '<div class="spaint">' + (r.pl && r.pl.length ? r.pl.map(function (x) { return '<b>' + esc(x.stage) + '</b>: ' + esc(pc(x.paint, x.color)) + ' · ' + fmt(x.litres, 1) + ' L'; }).join('<br>') : (steps(r).length ? '<i>No paint matched</i>' : '<i>Nothing to apply · ready to release</i>')) + '</div>' + (r.note ? '<div class="snote">' + esc(r.note) + '</div>' : '') + (r.warn ? '<div class="swarn">' + esc(r.warn) + '</div>' : '') + (noDataRow(r) && S.canEdit ? '<button type="button" class="btn sm" data-act="add-pdata" data-wo="' + esc(r.wo) + '">+ Add project data</button>' : '') + sel + '</div>' +
       '<div class="nums"><span><b>' + fmt(r.litres, 1) + '</b> L</span><span>' + fmt(r.area, 0) + ' m²</span><span>' + fmt(r.wt, 2) + ' t</span><span>' + r.qty + ' pcs</span></div>' + (showBat() || S.lsq ? batchChips(r) : '') +
-      '<div class="ctl">' + ctl + (S.canEdit ? xsel + xs : '') + '</div>' + updHtml(r.by, r.u) + '</div>';
+      '<div class="ctl">' + ctl + (canMark() ? xsel + xs : '') + '</div>' + updHtml(r.by, r.u) + '</div>';
   }
   /* ---------- handover: tasks, Excel export / import ---------- */
   var K_HO = 'aic-ho-v1';
@@ -2311,6 +2312,8 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
   function canPaint() { return !!S.role && pdOf(realName()); }
   function canReview() { return !!S.role && rvOf(realName()); }
   function roleLabel(r) { return { owner: 'ADMIN', manager: 'MANAGER', supervisor: 'SUPERVISOR', engineer: 'ENGINEER', foreman: 'FOREMAN', checker: 'CHECKER', painter: 'PAINTER' }[r] || 'ADMIN'; }
+  /* anyone signed in (foreman, checker, painter too) can mark steps on the log sheet and build a handover; their marks stay on their phone */
+  function canMark() { return !!S.role; }
   function applyRole() { var staff = S.role === 'owner' || STAFF.test(S.role); S.canEdit = staff; S.pwOk = staff; }
   function ownerName() { return OWNER_NAME; }
   function sha(t) { try { if (window.crypto && crypto.subtle && window.TextEncoder) return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }); } catch (e) {} return Promise.resolve('h' + hash32(t) + hash32(t.split('').reverse().join(''))); }
