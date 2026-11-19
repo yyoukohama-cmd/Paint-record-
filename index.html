@@ -1130,7 +1130,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var tab = b.getAttribute('data-tab'); if (tab) { var tf = b.getAttribute('data-f'); if (tf && $('logfilter')) $('logfilter').value = tf; goTab(tab); return; }
     var act = b.getAttribute('data-act'), id = b.getAttribute('data-id'), si = +b.getAttribute('data-si'), ci = +b.getAttribute('data-ci');
     if (/^(save-project|add-coat|del-coat|add-system|del-system|del-project|del-yes|add-project)$/.test(act) && !canPaint() && !(S.apEd && /^(save-project|add-coat|del-coat|add-system|del-system)$/.test(act))) return;
-    if (/^(set-step|set-plan|x-open|x-tog|x-add|del-x|toggle-rel|ho-set|ho-add|ho-clear|ho-reset|ho-release|ho-to|pick-shift|make-ho|add-pdata|clear-shift|reset-shift|save-record|del-record)$/.test(act) && !canMark()) { if (/^(manager|checker)$/.test(S.role)) toast('Review only.'); return; }
+    if (/^(set-step|set-plan|x-open|x-tog|x-add|del-x|toggle-rel|ho-set|ho-add|ho-clear|ho-reset|ho-release|ho-to|pick-shift|make-ho|add-pdata|clear-shift|reset-shift|save-record|del-record)$/.test(act) && !canMark()) { if (S.role && S.role !== 'qc') toast('Review only.'); return; }
     if (/^(toggle-rel|reset-shift|clear-shift|pick-shift)$/.test(act) && !S.canEdit && !(act === 'pick-shift' && S.tab === 'handover')) return;
     if (act === 'rec-menu') { if (rpp) rpp.hidden = !rpp.hidden; markDock(); return; }
     if (act === 'save-record') saveRecord();
@@ -2737,7 +2737,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   function canReview() { return !!S.role && rvOf(realName()); }
   function roleLabel(r) { return { owner: 'ENGINEER', manager: 'MANAGER', supervisor: 'SUPERVISOR', engineer: 'ENGINEER', foreman: 'FOREMAN', checker: 'CHECKER', painter: 'PAINTER', qc: 'QC' }[r] || 'ADMIN'; }
   /* anyone signed in (foreman, checker, painter too) can mark steps on the log sheet and build a handover; their marks stay on their phone */
-  function canMark() { return !!S.role && !/^(qc|manager|checker)$/.test(S.role); }
+  function canMark() { return /^(owner|engineer|supervisor|foreman)$/.test(S.role || ''); }
   function applyRole() { var staff = S.role === 'owner' || STAFF.test(S.role); S.canEdit = staff; S.pwOk = staff; }
   function ownerName() { return OWNER_NAME; }
   function sha(t) { try { if (window.crypto && crypto.subtle && window.TextEncoder) return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }); } catch (e) {} return Promise.resolve('h' + hash32(t) + hash32(t.split('').reverse().join(''))); }
