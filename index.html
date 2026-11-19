@@ -1496,7 +1496,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   function rcolSave() { lsSet('aic-rcol', JSON.stringify(S.rcol)); }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-act="rcol"],[data-act="rcol-all"],[data-act="bcol"],[data-act="batcol"],[data-act="nx"]') : null; if (!b) return; e.stopPropagation();
-    if (b.getAttribute('data-act') === 'nx') { var ni = b.getAttribute('data-id'); S.nxo[ni] = !S.nxo[ni]; var y2 = window.scrollY; renderShift(); window.scrollTo(0, y2); return; }
+    if (b.getAttribute('data-act') === 'nx') { var ni = b.getAttribute('data-id'); S.nxc[ni] = !S.nxc[ni]; try { localStorage.setItem('aic-nxcol', JSON.stringify(S.nxc)); } catch (e) {} var y2 = window.scrollY; renderShift(); window.scrollTo(0, y2); return; }
     if (b.getAttribute('data-act') === 'batcol') { var bi = b.getAttribute('data-id'); if (S.batcol[bi]) delete S.batcol[bi]; else S.batcol[bi] = 1; lsSet('aic-batcol', JSON.stringify(S.batcol)); var y1 = window.scrollY; renderShift(); window.scrollTo(0, y1); return; }
     if (b.getAttribute('data-act') === 'bcol') { var bn = b.getAttribute('data-id'); if (S.bcol[bn]) delete S.bcol[bn]; else S.bcol[bn] = 1; lsSet('aic-bcol', JSON.stringify(S.bcol)); var y0 = window.scrollY; renderShift(); window.scrollTo(0, y0); return; }
     if (b.getAttribute('data-act') === 'rcol') { var id = b.getAttribute('data-id'); if (S.rcol[id]) delete S.rcol[id]; else S.rcol[id] = 1; }
@@ -1508,18 +1508,20 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     if (!r.stage) return ''; var ci = null; try { ci = qcCoat(r, r.stage); } catch (e) {}
     var c = ci && ci.c; if (!c || !c.color) return ''; var k = colorInfo(c.color); if (!k) return ''; return '<span class="stcol">' + qcSw(c.color) + '<span class="stcn">' + esc(k.label) + '</span></span>';
   }
-  S.nxo = {};
+  S.nxc = {}; try { S.nxc = JSON.parse(localStorage.getItem('aic-nxcol') || '{}') || {}; } catch (e) {}
+  function nxOpen(id) { return !S.nxc[id]; }
   function rowNext(r) {
     var st = steps(r), dn = Math.min(r.done || 0, st.length);
     function cdi(s) { try { return qcCoat(r, s); } catch (e) { return null; } }
     function um(v) { return v ? fmt(v, 0) + ' µm' : ''; }
-    if (!st.length || dn >= st.length) { var k0 = cdi(r.stage), tt = k0 && k0.all, fo = !!S.nxo[r.id], fc = k0 && k0.c;
+    if (!st.length || dn >= st.length) { var k0 = cdi(r.stage), tt = k0 && k0.all, fo = nxOpen(r.id), fc = k0 && k0.c;
       return '<button type="button" class="snow nx done snxb" data-act="nx" data-id="' + esc(r.id) + '" aria-expanded="' + fo + '"><span>' + (st.length ? 'Done' : 'Final') + '</span><b>Ready to release</b><em>' + (fo ? '▴' : '▾') + '</em></button>' +
-        (k0 && k0.dft ? '<div class="sdft"><span>DFT</span><b>' + um(k0.dft) + '</b>' + (tt > k0.dft ? '<i>Total <b>' + um(tt) + '</b></i>' : '') + '</div>' : '') +
-        (fo ? '<div class="spaint">' + (fc ? '<b>' + esc(qcNorm(r.stage)) + '</b>: ' + qcSw(fc.color) + esc(pc(fc.paint || '', fc.color || '')) + (k0.dft ? ' · DFT ' + um(k0.dft) : '') + (k0.sys && k0.sys.name ? '<br><small>' + esc(k0.sys.name) + '</small>' : '') : '<i>No paint data for this coat</i>') + '</div>' : ''); }
-    var nx = st[dn], ci = cdi(nx); var c = ci && ci.c, op = !!S.nxo[r.id];
+        (fo && k0 && k0.dft ? '<div class="sdft"><span>DFT</span><b>' + um(k0.dft) + '</b>' + (tt > k0.dft ? '<i>Total <b>' + um(tt) + '</b></i>' : '') + '</div>' : '') +
+        (fo ? '<div class="spaint">' + (fc ? '<b>' + esc(qcNorm(r.stage)) + '</b>: ' + qcSw(fc.color) + esc(pc(fc.paint || '', fc.color || ''))  : '<i>No paint data for this coat</i>') + '</div>' : ''); }
+    var nx = st[dn], ci = cdi(nx); var c = ci && ci.c, op = nxOpen(r.id);
+    var pl1 = (r.pl || []).filter(function (x) { return qcNorm(x.stage) === qcNorm(nx); })[0];
     var det = (r.pl && r.pl.length ? r.pl.map(function (x) { var k = cdi(x.stage); return '<b>' + esc(x.stage) + '</b>: ' + qcSw(x.color) + esc(pc(x.paint, x.color)) + (k && k.dft ? ' · DFT ' + um(k.dft) : '') + ' · ' + fmt(x.litres, 1) + ' L'; }).join('<br>') : (steps(r).length ? '<i>No paint matched</i>' : '<i>Nothing to apply · ready to release</i>'));
-    return '<button type="button" class="snow nx snxb" data-act="nx" data-id="' + esc(r.id) + '" aria-expanded="' + op + '"><span>Next</span><b>' + esc(qcNorm(nx)) + '</b>' + (c && c.color && colorInfo(c.color) ? qcSw(c.color) + '<span class="nxc">' + esc(colorInfo(c.color).label) + '</span>' : '') + '<em>' + (op ? '▴' : '▾') + '</em></button>' + (ci && ci.dft ? '<div class="sdft"><span>DFT</span><b>' + um(ci.dft) + '</b>' + (ci.tot > ci.dft ? '<i>Total after coat <b>' + um(ci.tot) + '</b></i>' : '') + '</div>' : '') + (op ? '<div class="spaint">' + det + '</div>' : '');
+    return '<button type="button" class="snow nx snxb" data-act="nx" data-id="' + esc(r.id) + '" aria-expanded="' + op + '"><span>Next</span><b>' + esc(qcNorm(nx)) + '</b>' + (c && c.color && colorInfo(c.color) ? qcSw(c.color) + '<span class="nxc">' + esc(colorInfo(c.color).label) + '</span>' : '') + '<em>' + (op ? '▴' : '▾') + '</em></button>' + (op && ci && ci.dft ? '<div class="sdft"><span>DFT</span><b>' + um(ci.dft) + '</b>' + (ci.tot > ci.dft ? '<i>Total after coat <b>' + um(ci.tot) + '</b></i>' : '') + '</div>' : '') + (op && c ? '<div class="spaint">' + qcSw(c.color) + esc(pc(c.paint || '', c.color || ''))  + '</div>' : '');
   }
   function rowHtml(r) {
     var p = getP(r.pid), ss = sysList(p), fin = isFinal(r), id = esc(r.id);
@@ -1534,8 +1536,8 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var top = '<div class="stop"><span class="baychip" style="background:' + bayCol(r.bay) + '">' + esc(r.bay) + '</span><b>' + esc(r.wo) + '</b>' + (noDataRow(r) ? '<span class="ndtag">No Data Available</span>' : '') + '<span class="chip gray">' + esc(r.treat || '-') + '</span><span class="stage">' + esc(r.stage) + (r.oneSide ? ' · one side' : '') + '</span>' + rowNow(r) + '<button type="button" class="rcolb" data-act="rcol" data-id="' + id + '" aria-label="' + (rcolOn(r.id) ? 'Expand' : 'Collapse') + '" aria-expanded="' + !rcolOn(r.id) + '">' + (rcolOn(r.id) ? '▾' : '▴') + '</button></div>';
     if (rcolOn(r.id)) return '<div class="srow col' + (r.warn ? ' warn' : '') + '" style="border-left:6px solid ' + bayCol(r.bay) + '"><div class="smain">' + top + rowNext(r) + '</div>' + qcRowHtml(r) + '</div>';
     return '<div class="srow' + (r.warn ? ' warn' : '') + '" style="border-left:6px solid ' + bayCol(r.bay) + '"><div class="smain">' + top +
-      rowNext(r) + (r.note ? '<div class="snote">' + esc(r.note) + '</div>' : '') + (r.warn ? '<div class="swarn">' + esc(r.warn) + '</div>' : '') + (noDataRow(r) && S.canEdit ? '<button type="button" class="btn sm" data-act="add-pdata" data-wo="' + esc(r.wo) + '">+ Add project data</button>' : '') + sel + '</div>' +
-      '<div class="nums"><span><b>' + fmt(r.litres, 1) + '</b> L</span><span><b>' + fmt(r.area, 0) + '</b> m²</span><span><b>' + fmt(r.wt, 2) + '</b> t</span><span><b>' + r.qty + '</b> pcs</span></div>' + (showBat() || S.lsq ? batchChips(r) : '') +
+      rowNext(r) + (r.note && nxOpen(r.id) ? '<div class="snote">' + esc(r.note) + '</div>' : '') + (r.warn ? '<div class="swarn">' + esc(r.warn) + '</div>' : '') + (noDataRow(r) && S.canEdit ? '<button type="button" class="btn sm" data-act="add-pdata" data-wo="' + esc(r.wo) + '">+ Add project data</button>' : '') + (nxOpen(r.id) ? sel : '') + '</div>' +
+      (nxOpen(r.id) ? '<div class="nums"><span><b>' + fmt(r.litres, 1) + '</b> L</span><span><b>' + fmt(r.area, 0) + '</b> m²</span><span><b>' + fmt(r.wt, 2) + '</b> t</span><span><b>' + r.qty + '</b> pcs</span></div>' : '') + (showBat() || S.lsq ? batchChips(r) : '') +
       '<div class="ctl">' + ctl + qcBtn(r) + (canMark() ? xsel + xs : '') + '</div>' + qcRowHtml(r) + updHtml(r.by, r.u) + '</div>';
   }
   /* ---------- handover: tasks, Excel export / import ---------- */
