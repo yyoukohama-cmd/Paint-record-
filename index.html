@@ -403,7 +403,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
 .uaddc{background:var(--bg,#f4f6f8);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.uaddt{display:block;margin-bottom:6px}.urow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:8px;align-items:center;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:var(--surface,#fff)}.urow b{flex:1}.upos{font-size:.75rem;font-weight:700;color:#1f5fbf;background:#e8f1fe;border-radius:999px;padding:3px 9px}.uchev{color:var(--muted)}.uopen{border:1.5px solid #1f5fbf;border-radius:14px;padding:4px 8px 8px;margin-bottom:8px}.uopen .urow{border:0;margin:0;padding:8px 4px}
 .bayt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:8px 0 8px 14px;border-radius:12px}.bayt .muted{margin-left:auto;font-size:.85rem}.bchev{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;border:1.5px solid var(--line);color:var(--muted);flex:none}.card.bcol{padding-bottom:12px}
 .sblb{all:unset;cursor:pointer;display:inline-flex;gap:6px;align-items:center}.sblb span{font-size:.8rem;color:var(--muted)}
-.snow{font-size:.85rem;margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}.snow span{font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#5B6B7A;border-radius:6px;padding:2px 7px}.snow i{font-style:normal;color:var(--muted);flex-basis:100%}
+.snow{font-size:.85rem;margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}.snow span{font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#5B6B7A;border-radius:6px;padding:2px 7px}.snow i{font-style:normal;color:var(--muted);flex-basis:100%}.snow.nx span{background:#C40F3C}.snxb{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:.85rem;margin:2px 0 6px}.snxb em{font-style:normal;margin-left:auto;color:var(--muted)}
 .qconly{display:none!important}body.role-qc .qconly{display:flex!important}body.role-qc .navdock [data-act=rec-menu],body.role-qc .navdock [data-tab=handover],body.role-qc .navdock [data-tab=reports]{display:none!important}
 body.role-qc #nd-qc{order:3}body.role-qc #nd-proj{order:4}body.role-qc .navdock [data-tab=home]{order:1}body.role-qc .navdock [data-tab=shift]{order:2}.navdock button{position:relative}.ndb{position:absolute;top:2px;right:18%}
 body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc .hmc[data-tab=handover],body.role-qc .hmc[data-act=open-pi],body.role-qc .hmc[data-tab=reports],body.role-qc #apcard,body.role-qc .hmhero .hmst:not(.hmls){display:none!important}
@@ -1495,7 +1495,8 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   function rcolOn(id) { return !!S.rcol[id]; }
   function rcolSave() { lsSet('aic-rcol', JSON.stringify(S.rcol)); }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest ? e.target.closest('[data-act="rcol"],[data-act="rcol-all"],[data-act="bcol"],[data-act="batcol"]') : null; if (!b) return; e.stopPropagation();
+    var b = e.target.closest ? e.target.closest('[data-act="rcol"],[data-act="rcol-all"],[data-act="bcol"],[data-act="batcol"],[data-act="nx"]') : null; if (!b) return; e.stopPropagation();
+    if (b.getAttribute('data-act') === 'nx') { var ni = b.getAttribute('data-id'); S.nxo[ni] = !S.nxo[ni]; var y2 = window.scrollY; renderShift(); window.scrollTo(0, y2); return; }
     if (b.getAttribute('data-act') === 'batcol') { var bi = b.getAttribute('data-id'); if (S.batcol[bi]) delete S.batcol[bi]; else S.batcol[bi] = 1; lsSet('aic-batcol', JSON.stringify(S.batcol)); var y1 = window.scrollY; renderShift(); window.scrollTo(0, y1); return; }
     if (b.getAttribute('data-act') === 'bcol') { var bn = b.getAttribute('data-id'); if (S.bcol[bn]) delete S.bcol[bn]; else S.bcol[bn] = 1; lsSet('aic-bcol', JSON.stringify(S.bcol)); var y0 = window.scrollY; renderShift(); window.scrollTo(0, y0); return; }
     if (b.getAttribute('data-act') === 'rcol') { var id = b.getAttribute('data-id'); if (S.rcol[id]) delete S.rcol[id]; else S.rcol[id] = 1; }
@@ -1505,7 +1506,16 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   /* the coat the material already has (its condition now), with paint and colour */
   function rowNow(r) {
     if (!r.stage) return ''; var ci = null; try { ci = qcCoat(r, r.stage); } catch (e) {}
-    var c = ci && ci.c; return '<div class="snow"><span>Now</span><b>' + esc(r.stage) + '</b>' + (c ? (c.color ? ' · ' + qcColor(c.color) : '') + (c.paint ? '<i>' + esc(c.paint) + '</i>' : '') : '') + '</div>';
+    var c = ci && ci.c; return '<div class="snow"><span>Now</span><b>' + esc(r.stage) + '</b>' + (c && c.color ? ' · ' + qcColor(c.color) : '') + '</div>';
+  }
+  S.nxo = {};
+  function rowNext(r) {
+    var st = steps(r), dn = Math.min(r.done || 0, st.length);
+    if (!st.length) return '<div class="spaint"><i>Nothing to apply · ready to release</i></div>';
+    if (dn >= st.length) return '<div class="snow nx"><span>Next</span><b>All coats done</b></div>';
+    var nx = st[dn], ci = null; try { ci = qcCoat(r, nx); } catch (e) {} var c = ci && ci.c, op = !!S.nxo[r.id];
+    var det = (r.pl && r.pl.length ? r.pl.map(function (x) { return '<b>' + esc(x.stage) + '</b>: ' + qcSw(x.color) + esc(pc(x.paint, x.color)) + ' · ' + fmt(x.litres, 1) + ' L'; }).join('<br>') : (steps(r).length ? '<i>No paint matched</i>' : '<i>Nothing to apply · ready to release</i>'));
+    return '<button type="button" class="snow nx snxb" data-act="nx" data-id="' + esc(r.id) + '" aria-expanded="' + op + '"><span>Next</span><b>' + esc(qcNorm(nx)) + '</b>' + (c && c.color ? ' · ' + qcColor(c.color) : '') + '<em>' + (op ? '▴' : '▾') + '</em></button>' + (op ? '<div class="spaint">' + det + '</div>' : '');
   }
   function rowHtml(r) {
     var p = getP(r.pid), ss = sysList(p), fin = isFinal(r), id = esc(r.id);
@@ -1520,7 +1530,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var top = '<div class="stop"><span class="baychip" style="background:' + bayCol(r.bay) + '">' + esc(r.bay) + '</span><b>' + esc(r.wo) + '</b>' + (noDataRow(r) ? '<span class="ndtag">No Data Available</span>' : '') + '<span class="chip gray">' + esc(r.treat || '-') + '</span><span class="stage">' + esc(r.stage) + (r.oneSide ? ' · one side' : '') + '</span><button type="button" class="rcolb" data-act="rcol" data-id="' + id + '" aria-label="' + (rcolOn(r.id) ? 'Expand' : 'Collapse') + '" aria-expanded="' + !rcolOn(r.id) + '">' + (rcolOn(r.id) ? '▾' : '▴') + '</button></div>';
     if (rcolOn(r.id)) return '<div class="srow col' + (r.warn ? ' warn' : '') + '" style="border-left:6px solid ' + bayCol(r.bay) + '"><div class="smain">' + top + '<div class="scol">' + (st.length ? st.map(function (x, i) { return '<span class="' + (i < dn ? 'cdn' : '') + '">' + (i < dn ? '✓ ' : '') + esc(x) + '</span>'; }).join(' · ') : (rel ? 'Released' : 'Ready to release')) + ' · <b>' + fmt(r.litres, 1) + ' L</b> · ' + fmt(r.wt, 2) + ' t · ' + r.qty + ' pcs</div></div>' + qcRowHtml(r) + '</div>';
     return '<div class="srow' + (r.warn ? ' warn' : '') + '" style="border-left:6px solid ' + bayCol(r.bay) + '"><div class="smain">' + top +
-      rowNow(r) + '<div class="spaint">' + (r.pl && r.pl.length ? r.pl.map(function (x) { return '<b>' + esc(x.stage) + '</b>: ' + qcSw(x.color) + esc(pc(x.paint, x.color)) + ' · ' + fmt(x.litres, 1) + ' L'; }).join('<br>') : (steps(r).length ? '<i>No paint matched</i>' : '<i>Nothing to apply · ready to release</i>')) + '</div>' + (r.note ? '<div class="snote">' + esc(r.note) + '</div>' : '') + (r.warn ? '<div class="swarn">' + esc(r.warn) + '</div>' : '') + (noDataRow(r) && S.canEdit ? '<button type="button" class="btn sm" data-act="add-pdata" data-wo="' + esc(r.wo) + '">+ Add project data</button>' : '') + sel + '</div>' +
+      rowNow(r) + rowNext(r) + (r.note ? '<div class="snote">' + esc(r.note) + '</div>' : '') + (r.warn ? '<div class="swarn">' + esc(r.warn) + '</div>' : '') + (noDataRow(r) && S.canEdit ? '<button type="button" class="btn sm" data-act="add-pdata" data-wo="' + esc(r.wo) + '">+ Add project data</button>' : '') + sel + '</div>' +
       '<div class="nums"><span><b>' + fmt(r.litres, 1) + '</b> L</span><span>' + fmt(r.area, 0) + ' m²</span><span>' + fmt(r.wt, 2) + ' t</span><span>' + r.qty + ' pcs</span></div>' + (showBat() || S.lsq ? batchChips(r) : '') +
       '<div class="ctl">' + ctl + qcBtn(r) + (canMark() ? xsel + xs : '') + '</div>' + qcRowHtml(r) + updHtml(r.by, r.u) + '</div>';
   }
@@ -3788,7 +3798,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
 
   /* ---------- View as: the engineer sees the app exactly as another user, read only, nothing is saved or sent ---------- */
   S.viewAs = null;
-  var VA_OK = '[data-tab],[data-hl],[data-act=open-summary],[data-act=open-calc],[data-act=open-pi],[data-act=view-project],[data-act=close-edit],[data-act=ho-view],[data-act=hd-grp],[data-act=sub-open],[data-act=qc-tab],[data-act=qc-bay],[data-act=qc-day],[data-act=qc-who],[data-act=qc-open],[data-act=rcol],[data-act=rcol-all],[data-act=bcol],[data-act=batcol],[data-act=notifs],[data-act=ls-paint],[data-act=pick-hobay],[data-act=toggle-bat],[data-act=rec-menu],[data-act=ar-on],[data-act=ar-bay],[data-act=settings],[data-act=apgo],[data-apgo],[data-qa=close],[data-sm=close],[data-sm=tab],[data-pi=close],[data-pi=tab],[data-nc],[data-cc=close],[data-cl],[data-se=close],[data-va],[data-ay=no],.ibtn[aria-label=Close]';
+  var VA_OK = '[data-tab],[data-hl],[data-act=open-summary],[data-act=open-calc],[data-act=open-pi],[data-act=view-project],[data-act=close-edit],[data-act=ho-view],[data-act=hd-grp],[data-act=sub-open],[data-act=qc-tab],[data-act=qc-bay],[data-act=qc-day],[data-act=qc-who],[data-act=qc-open],[data-act=rcol],[data-act=rcol-all],[data-act=bcol],[data-act=batcol],[data-act=nx],[data-act=notifs],[data-act=ls-paint],[data-act=pick-hobay],[data-act=toggle-bat],[data-act=rec-menu],[data-act=ar-on],[data-act=ar-bay],[data-act=settings],[data-act=apgo],[data-apgo],[data-qa=close],[data-sm=close],[data-sm=tab],[data-pi=close],[data-pi=tab],[data-nc],[data-cc=close],[data-cl],[data-se=close],[data-va],[data-ay=no],.ibtn[aria-label=Close]';
   var VA_NAME = 'Preview';
   S.uCol = {}; try { S.uCol = JSON.parse(lsGet('aic-ucol') || '{}') || {}; } catch (e) {}
   document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-x="usr-tog"]') : null; if (!b) return; var k = b.getAttribute('data-n'); if (S.uCol[k]) delete S.uCol[k]; else S.uCol[k] = 1; lsSet('aic-ucol', JSON.stringify(S.uCol)); renderAdmin(); }, true);
