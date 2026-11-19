@@ -402,9 +402,9 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
 #vabar{position:fixed;left:0;right:0;top:0;z-index:2000;background:#7a1fd1;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;font-size:.88rem;box-shadow:0 4px 14px rgba(0,0,0,.25)}#vabar button{all:unset;cursor:pointer;background:#fff;color:#7a1fd1;font-weight:800;border-radius:10px;padding:6px 14px}body.viewas{padding-top:44px}body.viewas [data-sec=va],body.viewas [data-sec=adm],body.viewas [data-sec=push],body.viewas [data-sec=clr]{display:none!important}
 .uaddc{background:var(--bg,#f4f6f8);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.uaddt{display:block;margin-bottom:6px}.urow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:8px;align-items:center;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:var(--surface,#fff)}.urow b{flex:1}.upos{font-size:.75rem;font-weight:700;color:#1f5fbf;background:#e8f1fe;border-radius:999px;padding:3px 9px}.uchev{color:var(--muted)}.uopen{border:1.5px solid #1f5fbf;border-radius:14px;padding:4px 8px 8px;margin-bottom:8px}.uopen .urow{border:0;margin:0;padding:8px 4px}
 .bayt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:8px 0 8px 14px;border-radius:12px}.bayt .muted{margin-left:auto;font-size:.85rem}.bchev{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;border:1.5px solid var(--line);color:var(--muted);flex:none}.card.bcol{padding-bottom:12px}
-.qconly{display:none!important}body.role-qc .qconly{display:flex!important}body.role-qc .navdock [data-act=rec-menu],body.role-qc .navdock [data-tab=shift],body.role-qc .navdock [data-tab=handover],body.role-qc .navdock [data-tab=reports]{display:none!important}
-body.role-qc #nd-qc{order:2}body.role-qc #nd-proj{order:3}body.role-qc .navdock [data-tab=home]{order:1}.navdock button{position:relative}.ndb{position:absolute;top:2px;right:18%}
-body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc .hmc[data-tab=shift],body.role-qc .hmc[data-tab=handover],body.role-qc .hmc[data-act=open-pi],body.role-qc .hmc[data-tab=reports],body.role-qc #apcard,body.role-qc .hmhero .hmst:not(.hmls){display:none!important}
+.qconly{display:none!important}body.role-qc .qconly{display:flex!important}body.role-qc .navdock [data-act=rec-menu],body.role-qc .navdock [data-tab=handover],body.role-qc .navdock [data-tab=reports]{display:none!important}
+body.role-qc #nd-qc{order:3}body.role-qc #nd-proj{order:4}body.role-qc .navdock [data-tab=home]{order:1}body.role-qc .navdock [data-tab=shift]{order:2}.navdock button{position:relative}.ndb{position:absolute;top:2px;right:18%}
+body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc .hmc[data-tab=handover],body.role-qc .hmc[data-act=open-pi],body.role-qc .hmc[data-tab=reports],body.role-qc #apcard,body.role-qc .hmhero .hmst:not(.hmls){display:none!important}
 .qsw{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.2);vertical-align:-2px;margin-right:5px}
 .qchead h2{margin:0;font-size:1.25rem}.qch{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.qch small{color:var(--muted);display:block;margin-top:2px}.qpos{font-size:.75rem;font-weight:700;color:#1f5fbf;background:#e8f1fe;border-radius:999px;padding:4px 10px;white-space:nowrap}
 .qkp{display:flex;gap:8px;margin-top:12px}.qkp>*{flex:1;all:unset;flex:1;box-sizing:border-box;cursor:pointer;background:var(--bg,#f4f6f8);border:1px solid var(--line);border-radius:14px;padding:9px 10px}.qkp i{font-style:normal;display:block;font-size:.66rem;letter-spacing:.06em;font-weight:700;color:var(--muted)}.qkp b{font-size:1.45rem}.qkp .r b{color:#C40F3C}.qkp .g b{color:#1c7a3e}.qkp.in{margin:0 0 6px}
@@ -1070,7 +1070,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   function hydrateIcons(root) { (root || document).querySelectorAll('[data-ic]').forEach(function (el) { if (!el.firstChild) el.innerHTML = ic(el.getAttribute('data-ic'), +el.getAttribute('data-sz') || 18); }); }
   function showTab(t) {
     if (t !== 'home' && t !== 'record' && t !== 'log' && t !== 'projects' && t !== 'shift' && t !== 'handover' && t !== 'reports' && t !== 'qc') t = 'home';
-    if (S.role === 'qc' && /^(record|log|shift|handover|reports)$/.test(t)) t = 'qc';
+    if (S.role === 'qc' && /^(record|log|handover|reports)$/.test(t)) t = 'qc';
     if (t === 'qc' && !S.role) t = 'home';
     
     var changed = S.tab !== t; S.tab = t; if (t !== 'projects') S.pRun = null;
@@ -2552,7 +2552,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
       var bc = !!S.bcol[g.bay], bdn = g.rows.filter(function (r) { return (r.done || 0) > 0 || r.status === 'released'; }).length;
       h += '<div class="card' + (bc ? ' bcol' : '') + '"><button type="button" class="eh bayh bayt" data-act="bcol" data-id="' + esc(g.bay) + '" aria-expanded="' + !bc + '" style="border-left:6px solid ' + bayCol(g.bay) + '"><h2 style="margin:0;font-size:1.05rem;font-weight:600">' + esc(g.bay) + '</h2><span class="muted">' + g.rows.length + ' line' + (g.rows.length === 1 ? '' : 's') + (bdn ? ' · ' + bdn + ' marked' : '') + ' · ' + fmt(bl, 1) + ' L · ' + fmt(bt, 1) + ' t</span><span class="bchev">' + (bc ? '▾' : '▴') + '</span></button>' + (bc ? '' : '<div class="slist">' + g.rows.map(rowHtml).join('') + '</div>') + '</div>';
     });
-    h += '<div class="card dock"><div class="dockrow"><button class="btn primary" data-act="make-ho">Create handover ' + ic('arrow', 16) + '</button>' + (S.canEdit ? '<button class="btn" data-act="reset-shift">Reset marks</button><button class="btn" data-act="clear-shift">Clear log sheet</button>' : '') + '</div></div>';
+    if (S.role !== 'qc') h += '<div class="card dock"><div class="dockrow"><button class="btn primary" data-act="make-ho">Create handover ' + ic('arrow', 16) + '</button>' + (S.canEdit ? '<button class="btn" data-act="reset-shift">Reset marks</button><button class="btn" data-act="clear-shift">Clear log sheet</button>' : '') + '</div></div>';
     box.innerHTML = h; hydrateIcons(box); lsqFocus();
   }
   function findRow(id) { var r = null; if (S.shift) S.shift.rows.forEach(function (x) { if (x.id === id) r = x; }); return r; }
@@ -3004,7 +3004,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   function findById(root, id) { var f = null; root.querySelectorAll('[data-id],[data-hnote],[data-rep]').forEach(function (e) { if (!f && (e.getAttribute('data-id') === id || e.getAttribute('data-hnote') === id || e.getAttribute('data-rep') === id)) f = e; }); return f; }
   function navTo(g) {
     if (!g || !g.t) return; var t = g.t, el;
-    if (S.role === 'qc' && /^(record|log|shift|handover|reports)$/.test(t)) g = { t: 'qc', id: '' }, t = 'qc';
+    if (S.role === 'qc' && /^(record|log|handover|reports)$/.test(t)) g = { t: 'qc', id: '' }, t = 'qc';
     if (t === 'qc') { location.hash = 'qc'; showTab('qc'); if (g.id) setTimeout(function () { qcOpen(null, g.id); }, 160); return; }
     if (t === 'log') {
       var r = null; S.records.forEach(function (x) { if (x._id === g.id) r = x; });
@@ -3037,7 +3037,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   /* --- notifications --- */
   function syNotify(msgs) {
     if (S.viewAs) return;
-    if (S.role === 'qc') { msgs = msgs.filter(function (n) { return /^(qc|shn|upd|pn|pp)$/.test(n.k || ''); }); if (!msgs.length) return; }
+    if (S.role === 'qc') { msgs = msgs.filter(function (n) { return /^(qc|shn|upd|pn|pp)$/.test(n.k || ''); }); msgs.forEach(function (n) { if (n.k === 'shn') n.g = { t: 'shift', id: '' }; }); if (!msgs.length) return; }
     var now = Date.now(); msgs.forEach(function (n) { SY.notifs.unshift({ t: now, m: n.m, ti: n.ti, g: n.g, k: n.k, r: 0 }); }); SY.notifs = SY.notifs.slice(0, 40); sySave(); syPaint();
     var first = msgs[0]; toastNav(first.m + (msgs.length > 1 ? ' (+' + (msgs.length - 1) + ' more)' : ''), msgs.length === 1 ? first.g : { t: 'panel' });
     if (document.hidden || !document.hasFocus()) osNotify(msgs);
@@ -3683,12 +3683,13 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     return '<button type="button" class="qcallb" data-act="qc-call" data-id="' + esc(r.id) + '" data-s="' + esc(tg) + '">⚑ ' + (x && x.st === 'no' ? 'Call QC again' : 'Call QC') + '</button>';
   }
   function qcRowHtml(r) {
-    if (!S.role || isQC()) return ''; var o = '';
+    if (!S.role) return ''; var o = '';
     qcStages(r).forEach(function (stg) {
       var s = qcSnap(r, stg), x = qcLatest(s.key), lb = esc(qcNorm(stg));
       if (x && x.st === 'ok') o += '<button type="button" class="qst ok" data-act="qc-open" data-k="' + esc(s.key) + '" data-r="' + esc(x.id) + '">QC ✓ ' + lb + (x.res.avg ? ' · ' + nf(x.res.avg) + ' µm' : '') + ' · ' + esc(x.res.by) + '</button>';
       else if (x && x.st === 'no') o += '<button type="button" class="qst no" data-act="qc-open" data-k="' + esc(s.key) + '" data-r="' + esc(x.id) + '">QC ✗ ' + lb + (x.res.note ? ' · ' + esc(x.res.note) : '') + '</button>';
       else if (x && x.st === 'pending') o += '<button type="button" class="qst rq" data-act="qc-open" data-k="' + esc(s.key) + '" data-r="' + esc(x.id) + '">⚑ QC called · ' + lb + ' · ' + esc(pn(x.req.to)) + ' · ' + ago(x.req.t) + '</button>';
+      else if (isQC() && (r.done || 0) > 0) o += '<button type="button" class="qst op" data-act="qc-open" data-k="' + esc(s.key) + '">Ready for QC · ' + lb + ' · Receive</button>';
     });
     return o ? '<div class="qrowc">' + o + '</div>' : '';
   }
