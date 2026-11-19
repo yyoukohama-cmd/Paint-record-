@@ -402,6 +402,7 @@ body.print-ho #tab-handover .printhead{display:block!important;font-weight:700}
 #vabar{position:fixed;left:0;right:0;top:0;z-index:2000;background:#7a1fd1;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;font-size:.88rem;box-shadow:0 4px 14px rgba(0,0,0,.25)}#vabar button{all:unset;cursor:pointer;background:#fff;color:#7a1fd1;font-weight:800;border-radius:10px;padding:6px 14px}body.viewas{padding-top:44px}body.viewas [data-sec=va],body.viewas [data-sec=adm],body.viewas [data-sec=push],body.viewas [data-sec=clr]{display:none!important}
 .uaddc{background:var(--bg,#f4f6f8);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.uaddt{display:block;margin-bottom:6px}.urow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:8px;align-items:center;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:var(--surface,#fff)}.urow b{flex:1}.upos{font-size:.75rem;font-weight:700;color:#1f5fbf;background:#e8f1fe;border-radius:999px;padding:3px 9px}.uchev{color:var(--muted)}.uopen{border:1.5px solid #1f5fbf;border-radius:14px;padding:4px 8px 8px;margin-bottom:8px}.uopen .urow{border:0;margin:0;padding:8px 4px}
 .bayt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:8px 0 8px 14px;border-radius:12px}.bayt .muted{margin-left:auto;font-size:.85rem}.bchev{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;border:1.5px solid var(--line);color:var(--muted);flex:none}.card.bcol{padding-bottom:12px}
+.sblb{all:unset;cursor:pointer;display:inline-flex;gap:6px;align-items:center}.sblb span{font-size:.8rem;color:var(--muted)}
 .qconly{display:none!important}body.role-qc .qconly{display:flex!important}body.role-qc .navdock [data-act=rec-menu],body.role-qc .navdock [data-tab=handover],body.role-qc .navdock [data-tab=reports]{display:none!important}
 body.role-qc #nd-qc{order:3}body.role-qc #nd-proj{order:4}body.role-qc .navdock [data-tab=home]{order:1}body.role-qc .navdock [data-tab=shift]{order:2}.navdock button{position:relative}.ndb{position:absolute;top:2px;right:18%}
 body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc .hmc[data-tab=handover],body.role-qc .hmc[data-act=open-pi],body.role-qc .hmc[data-tab=reports],body.role-qc #apcard,body.role-qc .hmhero .hmst:not(.hmls){display:none!important}
@@ -1484,14 +1485,17 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var m = {}, ord = [];
     (r.items || []).forEach(function (it) { var b = String(it.batch == null ? '' : it.batch).trim(); if (!b) b = '?'; if (/^\d+$/.test(b)) b = 'B' + b; if (!m[b]) { m[b] = { n: 0, t: 0 }; ord.push(b); } m[b].n += it.qty || 0; m[b].t += it.wt || 0; });
     ord.sort(function (a, b) { var x = parseInt(a.replace(/\D/g, ''), 10), y = parseInt(b.replace(/\D/g, ''), 10); return (isNaN(x) || isNaN(y)) ? (a < b ? -1 : 1) : x - y; });
-    return '<div class="sbat"><span class="sbl">Batches (' + ord.length + ')</span>' + ord.map(function (b) { return '<span class="bch' + (S.lsq && b.toLowerCase().indexOf(S.lsq.toLowerCase().replace(/^b/, '')) > -1 ? ' hit' : '') + '">' + esc(b) + '<i>' + m[b].n + ' pcs</i></span>'; }).join('') + '</div>';
+    var bcl = !!(S.batcol && S.batcol[r.id]);
+    return '<div class="sbat"><button type="button" class="sbl sblb" data-act="batcol" data-id="' + esc(r.id) + '" aria-expanded="' + !bcl + '">Batches (' + ord.length + ') <span>' + (bcl ? '▾' : '▴') + '</span></button>' + (bcl ? '' : ord.map(function (b) { return '<span class="bch' + (S.lsq && b.toLowerCase().indexOf(S.lsq.toLowerCase().replace(/^b/, '')) > -1 ? ' hit' : '') + '">' + esc(b) + '<i>' + m[b].n + ' pcs</i></span>'; }).join('')) + '</div>';
   }
   S.rcol = {}; try { S.rcol = JSON.parse(lsGet('aic-rcol') || '{}') || {}; } catch (e) {}
   S.bcol = {}; try { S.bcol = JSON.parse(lsGet('aic-bcol') || '{}') || {}; } catch (e) {}
+  S.batcol = {}; try { S.batcol = JSON.parse(lsGet('aic-batcol') || '{}') || {}; } catch (e) {}
   function rcolOn(id) { return !!S.rcol[id]; }
   function rcolSave() { lsSet('aic-rcol', JSON.stringify(S.rcol)); }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest ? e.target.closest('[data-act="rcol"],[data-act="rcol-all"],[data-act="bcol"]') : null; if (!b) return; e.stopPropagation();
+    var b = e.target.closest ? e.target.closest('[data-act="rcol"],[data-act="rcol-all"],[data-act="bcol"],[data-act="batcol"]') : null; if (!b) return; e.stopPropagation();
+    if (b.getAttribute('data-act') === 'batcol') { var bi = b.getAttribute('data-id'); if (S.batcol[bi]) delete S.batcol[bi]; else S.batcol[bi] = 1; lsSet('aic-batcol', JSON.stringify(S.batcol)); var y1 = window.scrollY; renderShift(); window.scrollTo(0, y1); return; }
     if (b.getAttribute('data-act') === 'bcol') { var bn = b.getAttribute('data-id'); if (S.bcol[bn]) delete S.bcol[bn]; else S.bcol[bn] = 1; lsSet('aic-bcol', JSON.stringify(S.bcol)); var y0 = window.scrollY; renderShift(); window.scrollTo(0, y0); return; }
     if (b.getAttribute('data-act') === 'rcol') { var id = b.getAttribute('data-id'); if (S.rcol[id]) delete S.rcol[id]; else S.rcol[id] = 1; }
     else { var vis = (S.shift && S.shift.rows || []).filter(function (r) { return (S.shift.hoBays || []).indexOf(r.bay) > -1; }), allc = vis.length && vis.every(function (r) { return S.rcol[r.id]; }); vis.forEach(function (r) { if (allc) delete S.rcol[r.id]; else S.rcol[r.id] = 1; }); }
@@ -2544,7 +2548,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     h += '<div class="tiles t5 prog">' + tileH('TASKS', pT) + tileH('CHECKED', pC) + tileR(pT - pC) + tileH('LINES DONE', pD) + tileH('RELEASED', pR) + '</div>';
     if (bad) h += '<div class="notice"><span data-ic="info"></span><span>' + bad + ' line' + (bad === 1 ? '' : 's') + ' could not be matched to paint data. Pick the paint system on the line, or add the project data in Projects.</span></div>';
     var pk = Object.keys(pg).sort(function (x, y) { return pg[y].l - pg[x].l; });
-    var pshow = lsGet('aic-lspaint') === '1', ptot = 0; pk.forEach(function (k) { ptot += pg[k].l; });
+    var pshow = lsGet('aic-lspaint') !== '0', ptot = 0; pk.forEach(function (k) { ptot += pg[k].l; });
     if (S.role !== 'qc') h += '<div class="card"><button type="button" class="prq" data-act="ls-paint" aria-expanded="' + pshow + '"><span><b>Paint required this shift</b><small>' + pk.length + ' paint' + (pk.length === 1 ? '' : 's') + ' · ' + fmt(ptot, 1) + ' L</small></span><em>' + (pshow ? 'Hide \u25B4' : 'Show \u25BE') + '</em></button>' + (pshow ? '<div class="tw">' : '<div hidden>') + '<table><thead><tr><th>Paint</th><th>Colour</th><th>Item code</th><th class="n">Litres</th><th class="n">Packs</th></tr></thead><tbody>' +
       (pk.map(function (k) { var g = pg[k]; return '<tr><td>' + esc(g.paint) + '</td><td>' + esc(g.color) + '</td><td>' + esc(g.code) + '</td><td class="n"><b>' + fmt(g.l, 1) + '</b></td><td class="n">' + (g.pack ? Math.ceil(g.l / g.pack - 1e-9) + ' x ' + nf(g.pack) + ' L' : '') + '</td></tr>'; }).join('') || '<tr><td colspan="5" class="muted">No paint could be calculated.</td></tr>') + '</tbody></table></div></div>';
     groupBays(vr).forEach(function (g) {
@@ -3228,7 +3232,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var h = '<div class="f" style="margin-top:14px"><label>Users (' + rows.length + ')</label><p class="fine" style="margin:0 0 6px">Tap a name to change the position, permissions or password.</p>';
     h += rows.length ? rows.map(function (n) {
       var k = lc(n), r = roleOf(n);
-      var op = !!(S.uOpen && S.uOpen[k]);
+      var op = !(S.uCol && S.uCol[k]);
       if (!op) return '<button type="button" class="urow" data-x="usr-tog" data-n="' + esc(k) + '"><b>' + esc(n) + '</b><span class="upos">' + esc(posName(n) || r) + '</span>' + (ST.apw[k] ? '' : '<span class="chip">NO PASSWORD</span>') + (naOf(n) ? '<span class="chip gray">NEEDS APPROVAL</span>' : '') + '<span class="uchev">▾</span></button>';
       return '<div class="uopen"><button type="button" class="urow on" data-x="usr-tog" data-n="' + esc(k) + '"><b>' + esc(n) + '</b><span class="upos">' + esc(posName(n) || r) + '</span><span class="uchev">▴</span></button><div class="row" style="display:flex;gap:8px;align-items:center;margin:8px 0 4px;flex-wrap:wrap">' + (ST.apw[k] ? '' : '<span class="chip">NO PASSWORD</span>') +
         '<select data-usr="role" data-n="' + esc(n) + '" aria-label="Role" style="width:auto">' + roleOpts(r) + '</select>' +
@@ -3778,10 +3782,10 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
 
   /* ---------- View as: the engineer sees the app exactly as another user, read only, nothing is saved or sent ---------- */
   S.viewAs = null;
-  var VA_OK = '[data-tab],[data-hl],[data-act=open-summary],[data-act=open-calc],[data-act=open-pi],[data-act=view-project],[data-act=close-edit],[data-act=ho-view],[data-act=hd-grp],[data-act=sub-open],[data-act=qc-tab],[data-act=qc-bay],[data-act=qc-day],[data-act=qc-who],[data-act=qc-open],[data-act=rcol],[data-act=rcol-all],[data-act=bcol],[data-act=notifs],[data-act=ls-paint],[data-act=pick-hobay],[data-act=toggle-bat],[data-act=rec-menu],[data-act=ar-on],[data-act=ar-bay],[data-act=settings],[data-act=apgo],[data-apgo],[data-qa=close],[data-sm=close],[data-sm=tab],[data-pi=close],[data-pi=tab],[data-nc],[data-cc=close],[data-cl],[data-se=close],[data-va],[data-ay=no],.ibtn[aria-label=Close]';
+  var VA_OK = '[data-tab],[data-hl],[data-act=open-summary],[data-act=open-calc],[data-act=open-pi],[data-act=view-project],[data-act=close-edit],[data-act=ho-view],[data-act=hd-grp],[data-act=sub-open],[data-act=qc-tab],[data-act=qc-bay],[data-act=qc-day],[data-act=qc-who],[data-act=qc-open],[data-act=rcol],[data-act=rcol-all],[data-act=bcol],[data-act=batcol],[data-act=notifs],[data-act=ls-paint],[data-act=pick-hobay],[data-act=toggle-bat],[data-act=rec-menu],[data-act=ar-on],[data-act=ar-bay],[data-act=settings],[data-act=apgo],[data-apgo],[data-qa=close],[data-sm=close],[data-sm=tab],[data-pi=close],[data-pi=tab],[data-nc],[data-cc=close],[data-cl],[data-se=close],[data-va],[data-ay=no],.ibtn[aria-label=Close]';
   var VA_NAME = 'Preview';
-  S.uOpen = {};
-  document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-x="usr-tog"]') : null; if (!b) return; var k = b.getAttribute('data-n'); S.uOpen[k] = !S.uOpen[k]; renderAdmin(); }, true);
+  S.uCol = {}; try { S.uCol = JSON.parse(lsGet('aic-ucol') || '{}') || {}; } catch (e) {}
+  document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-x="usr-tog"]') : null; if (!b) return; var k = b.getAttribute('data-n'); if (S.uCol[k]) delete S.uCol[k]; else S.uCol[k] = 1; lsSet('aic-ucol', JSON.stringify(S.uCol)); renderAdmin(); }, true);
   function vaBox() {
     return '<p class="fine" style="margin:0 0 8px">See the app exactly as a position sees it: its tabs, buttons and permissions. View only: nothing is saved or sent. Only you have this.</p><div class="abch rcvch">' +
       ROLES.map(function (r) { return '<button type="button" class="abp" data-x="adm-va" data-r="' + r[0] + '">' + esc(r[1]) + '</button>'; }).join('') + '</div>';
@@ -3898,7 +3902,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     else if (a === 'runoff') { S.pRun = null; renderProjects(); }
   });
 
-  document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-act="ls-paint"]') : null; if (!b) return; lsSet('aic-lspaint', lsGet('aic-lspaint') === '1' ? '0' : '1'); var y = window.scrollY; renderShift(); window.scrollTo(0, y); });
+  document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-act="ls-paint"]') : null; if (!b) return; lsSet('aic-lspaint', lsGet('aic-lspaint') !== '0' ? '0' : '1'); var y = window.scrollY; renderShift(); window.scrollTo(0, y); });
   /* ---------- boot ---------- */
   applyTheme();
   setTimeout(admRestore, 0);
