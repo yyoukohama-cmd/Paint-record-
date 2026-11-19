@@ -3832,7 +3832,7 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
   document.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-x="adm-va"]') : null; if (!b) return; e.stopPropagation(); vaStart(b.getAttribute('data-r')); }, true);
   var fillHome0 = fillHome; fillHome = function () { fillHome0(); try { qcHome(); } catch (e) {} };
   var renderAll0 = renderAll; renderAll = function () { renderAll0(); try { if (S.tab === 'qc') renderQc(); } catch (e) {} };
-  var BUILD = 'aic-paint-v69';
+  var BUILD = 'aic-paint-v70';
   function updCheck() {
     if (!/^https?:/.test(location.protocol) || !navigator.onLine) return;
     fetch('sw.js?c=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
