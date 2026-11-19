@@ -3736,6 +3736,15 @@ body.role-qc .hmc[data-tab=record],body.role-qc .hmc[data-tab=log],body.role-qc 
     var t = $('hm-qc'); if (t) t.hidden = !S.role;
     var b = $('hm-qcb'), n = S.role ? (isQC() ? qcToRecv().filter(qcForMe).length || qcToRecv().length : qcToRecv().length) : 0; if (b) { b.hidden = !n; b.textContent = n > 99 ? '99+' : n; }
     var ds = $('hm-qcs'); if (ds) ds.textContent = S.role ? (qcToRecv().length + ' to receive · ' + qcResults(qcDay(Date.now())).length + ' checked today') : 'Inspection and DFT records';
+    /* QC: Open tasks = the inspections people asked him for */
+    var ho = $('hl-o'), hos = $('hl-os'), hb0 = ho ? ho.closest('button') : null;
+    if (hb0) {
+      if (isQC()) {
+        var rq = qcToRecv().filter(qcForMe), by = {}, bys = {}; rq.forEach(function (it) { by[lc(it.rec.req.by)] = 1; bys[it.s.bay] = 1; });
+        ho.textContent = rq.length; if (hos) hos.textContent = rq.length ? 'requested from you · ' + Object.keys(by).length + ' ' + (Object.keys(by).length === 1 ? 'person' : 'people') + ' · ' + Object.keys(bys).length + ' bay' + (Object.keys(bys).length === 1 ? '' : 's') : 'no requests for you';
+        hb0.setAttribute('data-tab', 'qc');
+      } else if (hb0.getAttribute('data-tab') === 'qc') hb0.setAttribute('data-tab', 'shift');
+    }
     var nb = $('nd-qcb'); if (nb) { var m = isQC() ? qcToRecv().filter(qcForMe).length : 0; nb.hidden = !m; nb.textContent = m; }
   }
   function qcText(R, day) {
